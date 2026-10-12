@@ -29,6 +29,9 @@ bash skills/yaya-xspace/run.sh "<url>" --roster "浩哥,Tim,少白"
 
 # 省时间：跳过双参数交叉校验（转写时间减半）
 bash skills/yaya-xspace/run.sh "<url>" --no-crosscheck
+
+# 换分享图风格（默认 editorial 杂志风；可选 swiss/riso/midnight/hand）
+bash skills/yaya-xspace/run.sh "<url>" --style riso
 ```
 
 完整参数见 `--help` 或 [SKILL.md](SKILL.md)。中间缓存齐全时重跑同一 Space，只会重新走一遍蒸馏，耗时仅数秒到一分钟。
@@ -42,10 +45,11 @@ skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a               音频归档（默认保留——下载即归档）
 ├── distilled.md            ★ 最终干货（按说话人分组 + 关键名词总表）
 ├── distilled.png           ★ 分享图（笔记自动渲染成一张可直接发推的图）
-├── audio.labeled.json      ★ 结构化转写 {speaker, start, end, text}
-├── audio.dialog.txt        ★ 带说话人的对话稿
-├── audio.dialog.srt          带说话人的字幕
+├── audio.labeled.json      ★ 结构化转写 {speaker, start, end, text}（机器接口，说话人=字母）
+├── audio.dialog.txt        ★ 带说话人的对话稿（真名）
+├── audio.dialog.srt          带说话人的字幕（[真名]）
 ├── audio.txt / audio.srt     纯文本稿 / 无说话人字幕
+├── speaker_names.json        字母→真名 映射（对外文本用真名；labeled/turns 保持字母）
 └── .audio.asr/               中间缓存（词级转写、分离结果、差异报告、出图用的 HTML）
 ```
 

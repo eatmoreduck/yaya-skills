@@ -12,7 +12,7 @@ English | [简体中文](README.md)
 
 > **Wave 1: turn X Space audio into text.** Built for people who don't have time to listen — or forgot to. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim — **plus a ready-to-post share card**.
 
-**The core idea behind yaya-skills is a creation pipeline**: material goes in, work comes out. The first material source is X Space ([yaya-xspace](skills/yaya-xspace/)), backed by three atomic skills for download / transcription / speaker separation. More skills — writing, publishing — will join to complete the chain. Audio never leaves your machine.
+**yaya-skills is a toolset that helps writers work faster.** Wave 1 is a **distiller for X Spaces** ([yaya-xspace](skills/yaya-xspace/)): it turns Spaces you had no time to listen to into ready-to-use notes, backed by three atomic skills for download / transcription / speaker separation. More tools for writers will follow. Audio never leaves your machine.
 
 > Note: the distilled notes are written in Chinese (the pipeline is tuned for Chinese-language Spaces).
 
@@ -35,13 +35,23 @@ The full pipeline output of a real 119-minute Space — **["Noise After: Why You
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
 | [Speaker-labeled transcript (excerpt)](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 29,930 chars, 10 speakers) |
 
-<img src="demo/1AKEmvYqbrOKL/distilled.png" width="520" alt="share card example">
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="assets/styles/editorial.png" alt="Editorial magazine style card"><br><sub><b>Editorial · magazine (default)</b> — cream paper, Songti serif, vermilion blocks</sub></td>
+    <td align="center" width="50%"><img src="assets/styles/riso.png" alt="Risograph style card"><br><sub><b>Riso · risograph</b> — blue/orange misregistration, halftone</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="assets/styles/swiss.png" alt="Swiss international style card"><br><sub><b>Swiss · international</b> — off-white, heavy grotesk, red dot</sub></td>
+    <td align="center" width="50%"><img src="assets/styles/midnight.png" alt="Midnight style card"><br><sub><b>Midnight</b> — dark, gold hairlines, serif</sub></td>
+  </tr>
+</table>
 
 > 119 minutes of audio → a distilled note plus a share card in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
+> Five card styles are built in, including the hand-drawn `hand`: **Editorial** is the default — switch with `--style swiss|editorial|riso|midnight|hand`.
 
 ## Architecture
 
-![yaya-skills pipeline](assets/architecture.png)
+<img src="assets/architecture.png" width="440" alt="yaya-skills pipeline">
 
 **Layering rule: upper layers depend on lower ones, one direction only.**
 
@@ -78,7 +88,7 @@ Running locally also means: free, zero logins, no cloud accounts.
 ## Roadmap
 
 - ✅ **Wave 1**: X Space → notes (the pipeline above)
-- 🔜 **Next**: writing, publishing and more creation-pipeline skills — material in, work out
+- 🔜 **Next**: more tools that help writers work faster
 
 ## Models (auto-downloaded on first run, nothing to prepare)
 

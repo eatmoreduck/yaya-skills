@@ -12,7 +12,7 @@
 
 > **首期主打：X Space 录音转文字。** 给没时间听、或忘了听的人——一条链接，一场两小时的 Space 变成按说话人分组、金句原话全保留的中文干货笔记，**外加一张可直接发出去的分享图**。
 
-**yaya-skills 的核心逻辑是一条创作流流水线**：素材进来，作品出去。第一波的素材入口是 X Space（[yaya-xspace](skills/yaya-xspace/)），背后由下载 / 转写 / 分离三个原子 skill 支撑；后续会增加写作、发布等更多 skill，逐步补完整条创作链。音频全程不出本机。
+**yaya-skills 是一套帮助写作者提高效率的工具集合**。第一期是 **X Space 蒸馏提纯器**（[yaya-xspace](skills/yaya-xspace/)）：把没时间听、或忘了听的 Space 提纯成能直接用的干货笔记，背后由下载 / 转写 / 分离三个原子 skill 支撑；后续会增加更多为写作者提效的工具。音频全程不出本机。
 
 ## 快速开始（主打场景）
 
@@ -33,13 +33,23 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
 | [带说话人对话稿（节选）](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 29,930 字 / 10 位说话人） |
 
-<img src="demo/1AKEmvYqbrOKL/distilled.png" width="520" alt="分享图示例">
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="assets/styles/editorial.png" alt="Editorial 杂志风"><br><sub><b>Editorial · 杂志风（默认）</b>——米色宋体、朱红方块</sub></td>
+    <td align="center" width="50%"><img src="assets/styles/riso.png" alt="Riso 丝印潮风"><br><sub><b>Riso · 丝印潮风</b>——蓝橙套印错位、网点</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="assets/styles/swiss.png" alt="Swiss 国际风"><br><sub><b>Swiss · 国际风</b>——白底黑体红点、细线网格</sub></td>
+    <td align="center" width="50%"><img src="assets/styles/midnight.png" alt="Midnight 夜读"><br><sub><b>Midnight · 夜读</b>——暗底鎏金、宋体</sub></td>
+  </tr>
+</table>
 
 > 119 分钟音频 → 29.5 分钟出笔记 + 一张分享图（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
+> 分享图共 5 种风格（含手绘款 `hand`）：默认 **Editorial**，生成时可用 `--style swiss|editorial|riso|midnight|hand` 切换。
 
 ## 定位
 
-![yaya-skills 流水线](assets/architecture.png)
+<img src="assets/architecture.png" width="440" alt="yaya-skills 流水线">
 
 **分层原则：上层依赖下层，依赖单向。**
 
@@ -76,7 +86,7 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 ## Roadmap
 
 - ✅ **第一波**：X Space → 干货笔记（上面这条流水线）
-- 🔜 **后续**：写作、发布等更多创作流 skill——素材进来，作品出去
+- 🔜 **后续**：更多帮写作者提效的工具
 
 ## 模型（首次运行自动下载，无需手动准备）
 

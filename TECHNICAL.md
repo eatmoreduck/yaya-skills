@@ -61,9 +61,9 @@ audio.m4a ───────────────────────�
 **yaya-xspace（编排 + 蒸馏 + 出图）**
 - 蒸馏：智谱 `glm-5.3-flash`，`thinking` 显式 disabled（glm-5.x 默认开思考会吃光 token）；检查 `finish_reason=="length"`，截断时在笔记顶部打警告横幅；超时/空返回自动重试一次。
 - 提示词契约："蒸馏≠缩写"——砍寒暄/口头语/重复，但金句原话、关键名词、每人核心主张、枚举清单一项不许省。
-- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ **自媒体手绘/白板风 HTML**（米白纸底 + 马克笔黑线 + 陶土橙高亮 + 手写体 + 便签/胶带/涂鸦，视觉语言参照 claude-motion-skill 的白板与手绘案例）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记。
-- 出图字体：`skills/yaya-xspace/fonts/` 内置两款开源手写体（站酷庆科黄油体=标题、站酷快乐体=正文，均 OFL 许可随附 `OFL.txt`），渲染时拷到 HTML 同目录相对引用，不依赖系统字体。
-- 说话人署名解析兼容多种 LLM 输出格式（`A / Punk`、`A（Punk，…）`、`Punk（A）`、纯姓名），并有 字母→真名 全局映射兜底——**署名永远显示真名，不显示 A/B/C/D 字母**。
+- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ **五种风格 HTML**（`--style` 切换：`swiss` 国际主义 / `editorial` 杂志风【默认】/ `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板；视觉语言参照 claude-motion-skill 案例预览）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记；出图后日志提醒可换风格。
+- 出图字体：`skills/yaya-xspace/fonts/` 内置两款开源手写体（站酷庆科黄油体=标题、站酷快乐体=正文，均 OFL 许可随附 `OFL.txt`，**仅 `hand` 风格使用**；其余风格用系统宋体/黑体，可读性更好），渲染时拷到 HTML 同目录相对引用，不依赖系统字体。卡图首行品牌 = `eatmoreduck 多吃鸭 · yaya-skills`。
+- **说话人改名**：蒸馏后 `apply_speaker_names()` 从 distilled.md 解析 字母→真名 映射（复用 card.py 的 `_header_name()`，兼容 `A / Punk`、`A（Punk，…）`、`Punk（A）`、纯姓名等 LLM 惯用格式），把**对外文本产物**（dialog.txt / dialog.srt / distilled.md）里的字母标签换成真名——**对外永不出现 A/B/C/D**；映射落盘 `speaker_names.json`，供复查与幂等续跑。`labeled.json` / `turns.json` 是机器接口，**保持原始字母不变**。解析不出名字的字母保留原字母；改名失败只警告，绝不影响主流程。
 
 ### 1.4 数据布局
 
@@ -73,13 +73,14 @@ audio.m4a ───────────────────────�
 skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a              原始音频归档（默认保留——下载即归档）
 ├── meta.json              标题/时长
-├── audio.labeled.json     结构化转写 {speaker, start, end, text}（程序接口）
-├── audio.dialog.txt       带说话人对话稿（A：…/B：…）
-├── audio.dialog.srt       带说话人字幕（可对回音频）
+├── audio.labeled.json     结构化转写 {speaker, start, end, text}（程序接口，说话人=字母）
+├── audio.dialog.txt       带说话人对话稿（真名：…）
+├── audio.dialog.srt       带说话人字幕（[真名]，可对回音频）
 ├── audio.txt / audio.srt  纯文本稿 / 无说话人字幕
-├── audio.turns.json       说话人时间线
-├── distilled.md           蒸馏笔记（文本母本）
+├── audio.turns.json       说话人时间线（机器接口，说话人=字母）
+├── distilled.md           蒸馏笔记（文本母本，说话人=真名）
 ├── distilled.png          分享图（可直接发布）
+├── speaker_names.json     字母→真名 映射（对外文本已替换；机器接口文件不动）
 └── .audio.asr/            缓存（不进 git）：
     ├── asr.words.json       词级转写原文（最原始层）
     ├── asr.alt.json         第二遍独立转写
@@ -87,6 +88,8 @@ skills/yaya-xspace/out/<space-id>/
     ├── asr.crosscheck.txt   双转写差异报告
     └── distilled.card.html  出图 HTML（中间产物）
 ```
+
+**对外文本 vs 机器接口的分界**（改名后的三条对外文本用真名）：`dialog.txt` / `dialog.srt` / `distilled.md` 中的说话人一律真名——由 `apply_speaker_names()` 从 distilled.md 解析映射后统一替换，映射存 `speaker_names.json`；`labeled.json` / `turns.json` 是程序消费的机器接口，**保持原始字母**（下游按字母索引，不许改）。解析不出真名的字母（LLM 没写名字）保留原字母，宁缺毋改。
 
 **原始对话稿永不删除**（重跑只跳过不重算；只有 `--no-keep-audio` 删音频本身）。以上任何一层都可用于后续分析：词级 JSON 做精细对齐，labeled.json 做程序统计，dialog 文本做人读分析。
 

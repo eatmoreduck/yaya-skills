@@ -253,6 +253,192 @@ def llm_distill(labeled: str, model: str, title: str, roster: str) -> tuple[str,
 
 
 # ══════════════════════════════════════════════════════════════
+# 4. 说话人改名：对外文本产物（dialog.txt / dialog.srt / distilled.md）
+#    一律用真名，绝不出现 A/B/C 字母标签（见 AGENTS.md 硬约束 9）。
+#    机器接口（labeled.json / turns.json）保持原始字母，不动。
+# ══════════════════════════════════════════════════════════════
+def _renamed_count(text: str) -> int:
+    """数一数文本里还剩多少行首字母标签（用于日志/自检）。"""
+    return len(re.findall(r"(?m)^[A-Z]：", text))
+
+
+def _name_of(mapping: dict[str, str], letter: str) -> str:
+    """花名可能带备选（文字姐/蚊子姐、Ringo + 旺仔）→ 对外只取第一个名字。"""
+    name = (mapping.get(letter) or "").strip()
+    return re.split(r"[+/、，,]", name)[0].strip() if name else ""
+
+
+def _replace_dialog_lines(text: str, mapping: dict[str, str]) -> str:
+    """audio.dialog.txt：行首 `^([A-Z])：` → `真名：`（映射缺失的保留原字母）。"""
+    out = []
+    for line in text.splitlines():
+        m = re.match(r"^([A-Z])：", line)
+        name = _name_of(mapping, m.group(1)) if m else ""
+        out.append(f"{name}：" + line[2:] if name else line)
+    return "\n".join(out) + ("\n" if text.endswith("\n") else "")
+
+
+def _replace_srt_tags(text: str, mapping: dict[str, str]) -> str:
+    """audio.dialog.srt：`[X]` 标签 → `[真名]`（尾随空格保留原样）。"""
+    def sub(m: re.Match) -> str:
+        name = _name_of(mapping, m.group(1))
+        return f"[{name}]" + m.group(2) if name else m.group(0)
+    return re.sub(r"\[([A-Z])\]( ?)", sub, text)
+
+
+def _strip_lead_name(rest: str, mval: str) -> str:
+    """`rest` 若以映射值里的名字开头（Punk，自媒体… / Ringo + 旺仔，营销…）→ 去掉
+    名字与紧随的分隔符，只留描述；去不掉就原样返回（标题里名字不重复出现）。"""
+    rest = rest.strip().strip("（）()").strip()
+    if not rest or not mval:
+        return rest
+    # 同 card._dename 的分片口径：+/、，, 都是名字分隔符（Ringo + 旺仔 两段都要剥）
+    parts = [p.strip() for p in re.split(r"[+/、，,]", mval) if p.strip()]
+    for p in parts:
+        m = re.match(rf"^{re.escape(p)}\s*[+/、，,]?\s*", rest)
+        if m:
+            rest = rest[m.end():].strip()
+    return re.sub(r"^[+/、，,]+\s*", "", rest).strip()
+
+
+def _md_header_rename(header: str, mapping: dict[str, str]) -> str:
+    """distilled.md 小节标题去字母。兼容 LLM 输出过的多种格式：
+      `A（Punk，…）`    → `Punk（…）`（名字保留，去掉 `A（`；描述里重复的名字也去掉）
+      `A / Punk（…）`   → `Punk（…）`
+      `Punk（A）`       → `Punk`
+      `A`（孤字母）     → `Punk`
+    拿不到真名的字母原样保留（宁可留着字母，也不能改坏标题）。"""
+    h = header.strip()
+    m = re.match(r"^([A-Za-z])\s*[/、]\s*(.+)$", h)              # A / Punk（…）
+    if m and _name_of(mapping, m.group(1)):
+        return m.group(2).strip()
+    m = re.match(r"^([A-Za-z])\s*[（(]\s*(.+?)\s*[）)]\s*$", h)  # A（Punk，…）
+    if m and _name_of(mapping, m.group(1)):
+        name = _name_of(mapping, m.group(1))
+        rest = _strip_lead_name(m.group(2), mapping.get(m.group(1), ""))
+        return f"{name}（{rest}）" if rest else name
+    m = re.match(r"^(.+?)\s*[（(]\s*([A-Za-z])\s*[）)]\s*$", h)  # Punk（A）
+    if m and m.group(2) in mapping:
+        return m.group(1).strip()
+    m = re.fullmatch(r"([A-Za-z])", h)                           # 孤字母 A
+    if m and _name_of(mapping, m.group(1)):
+        return _name_of(mapping, m.group(1))
+    # 名字开头、括号里还是全名→去掉括号里重复的开头（幂等收敛：Punk（Punk，x）→ Punk（x））
+    m = re.match(r"^(.+?)\s*[（(]\s*(.+?)\s*[）)]\s*$", h)
+    if m:
+        lead = m.group(1).strip()
+        rest = _strip_lead_name(m.group(2), lead)
+        if rest and rest != m.group(2).strip():
+            return f"{lead}（{rest}）"
+    return header
+
+
+def _replace_bare_letters(text: str, mapping: dict[str, str]) -> str:
+    """正文里「不加括号」的说话人字母指代，只认两种高置信结构（其余一律不动）：
+      1) 关键名词表单元格：`—— A ——`、`—— A/C/D/F ——`、`—— H、B ——`
+      2) 句首归属：句读后紧跟中文的单字母，如 `A主张…`、`H认为…`
+    引号内的原话（「边搞 A 又搞 B」）、平台谐音（B 站）、英文词（GPT/KOL/List/I）
+    都因不满足上述结构而不受影响——金句原话的意思绝不能动（AGENTS.md 蒸馏契约）。"""
+    def sub(m: re.Match) -> str:
+        # 组里可能是 A，也可能是 A/C/D/F —— 逐字母替换、分隔符保持原样
+        return re.sub(r"[A-Z]", lambda lm: _name_of(mapping, lm.group(0)) or lm.group(0),
+                      m.group(1))
+    # 1) 表格单元格：字母序列（A、A/C、A/C/D/F）后面跟着 ` ——` 分隔
+    text = re.sub(r"(?<![A-Za-z0-9])([A-Z](?:[/、+＋,，][A-Z])*)(?=\s*[—–])", sub, text)
+    # 2) 句首归属：句读/行首之后、紧贴中文的单字母（A主张 / H认为 / E也）
+    text = re.sub(r"(?<![A-Za-z0-9])([A-Z])(?=[\u4e00-\u9fff])", sub, text)
+    return text
+
+
+def apply_speaker_names(outdir: Path, md_path: Path) -> dict[str, str]:
+    """把对外文本产物里的 A/B/C 字母标签换成真名（从 distilled.md 解析映射）。
+
+    产物：audio.dialog.txt、audio.dialog.srt、distilled.md、speaker_names.json。
+    幂等：重复运行不破坏（已无字母时静默跳过）；任何异常只警告，绝不中断主流程。
+    返回 字母→真名 的映射（拿不到名字的字母不在其中）。"""
+    try:
+        md_text = md_path.read_text(encoding="utf-8")
+    except OSError as e:
+        log(f"⚠️ 说话人改名跳过：读不到 {md_path}（{e}）")
+        return {}
+
+    try:
+        if str(SKILL_DIR) not in sys.path:
+            sys.path.insert(0, str(SKILL_DIR))
+        import card          # 同目录模块（card.py）
+        lmap = card.parse_distilled(md_text).get("lmap") or {}
+    except Exception as e:   # card 依赖 Chrome 等，导入失败也不能挡改名
+        log(f"⚠️ 说话人改名跳过：解析 distilled.md 失败（{e}）")
+        return {}
+
+    # 只留能拿到非空真名的字母；拿不到的保留原字母
+    parsed = {k: v.strip() for k, v in lmap.items() if k and (v or "").strip()}
+    # 幂等续跑：distilled.md 改完后标题里字母已消失，再解析就空了——
+    # 此时沿用上次落盘的 speaker_names.json（否则映射丢失，离群字母永远补不上）
+    mapping = parsed
+    names_json = outdir / "speaker_names.json"
+    if not mapping and names_json.exists():
+        try:
+            prev = json.loads(names_json.read_text(encoding="utf-8")).get("mapping") or {}
+            mapping = {k: v for k, v in prev.items() if k and (v or "").strip()}
+        except (OSError, json.JSONDecodeError):
+            mapping = {}
+    names_json.write_text(json.dumps(
+        {"mapping": mapping,
+         "note": "由蒸馏稿解析所得；labeled.json/turns.json 保持原始字母（机器接口）"},
+        ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    if not mapping:
+        log("说话人改名：蒸馏稿里解析不出真名（可能还是旧格式或标题已改完），对外文件保持原样")
+        return mapping
+
+    # a) dialog.txt（行首 A：→ 真名：）
+    for name in ("audio.dialog.txt",):
+        p = outdir / name
+        if not p.exists():
+            continue
+        text = p.read_text(encoding="utf-8")
+        new = _replace_dialog_lines(text, mapping)
+        if new != text:
+            p.write_text(new, encoding="utf-8")
+            log(f"说话人改名: {name}（残留 {_renamed_count(new)} 行字母标签）")
+
+    # b) dialog.srt（[A] → [真名]）
+    p = outdir / "audio.dialog.srt"
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        new = _replace_srt_tags(text, mapping)
+        if new != text:
+            p.write_text(new, encoding="utf-8")
+            log("说话人改名: audio.dialog.srt")
+
+    # c) distilled.md：①改小节标题（首 12 行是机器生成的头部，不碰）
+    #                ②正文括号里的字母指代换真名（card._dename，复用同款）
+    #                ③正文裸单字母指代（表格 `—— A ——`、`A/C/D/F`）也换真名
+    try:
+        lines = md_text.splitlines()
+        for i in range(len(lines)):
+            if i < 12 or not lines[i].lstrip().startswith("**"):
+                continue
+            hm = re.match(r"^(\s*\*\*)(.+?)(\*\*.*)$", lines[i])
+            if not hm:
+                continue
+            renamed = _md_header_rename(hm.group(2), mapping)
+            if renamed != hm.group(2):
+                lines[i] = hm.group(1) + renamed + hm.group(3)
+        mdd = "\n".join(lines) + ("\n" if md_text.endswith("\n") else "")
+        denamed = _replace_bare_letters(card._dename(mdd, mapping), mapping)
+        if denamed != md_text:
+            md_path.write_text(denamed, encoding="utf-8")
+            log("说话人改名: distilled.md")
+    except Exception as e:
+        log(f"⚠️ distilled.md 改名失败（不影响其他产物）：{e}")
+
+    named = "、".join(f"{k}→{v}" for k, v in sorted(mapping.items()))
+    log(f"说话人映射: {named}；未能命名的字母保留原样")
+    return mapping
+
+
 def slugify(s: str, n: int = 40) -> str:
     return re.sub(r"[^\w\u4e00-\u9fff]+", "-", s).strip("-")[:n] or "space"
 
@@ -274,6 +460,9 @@ def main() -> int:
                     help="跑完删除音频。默认保留——下载即归档，重跑不用再下 81MB")
     ap.add_argument("--no-card", action="store_true",
                     help="跳过生成分享图（distilled.png）；默认生成，失败只警告不影响笔记")
+    ap.add_argument("--style", default="editorial",
+                    choices=["swiss", "editorial", "riso", "midnight", "hand"],
+                    help="分享图风格（默认 editorial；可选 swiss/editorial/riso/midnight/hand）")
     ap.add_argument("--transcript-only", action="store_true", help="只转写不蒸馏")
     args = ap.parse_args()
 
@@ -345,11 +534,22 @@ def main() -> int:
     log(f"完成！{md}")
     log("=" * 60)
 
+    # 3.5) 说话人改名：对外文本产物（dialog.txt / dialog.srt / distilled.md）
+    #      一律真名，绝不留 A/B/C 字母标签（AGENTS.md 硬约束 9）。
+    #      失败只警告，绝不中断主流程；--transcript-only 在上面已 return（无蒸馏稿）。
+    try:
+        apply_speaker_names(outdir, md)
+    except Exception as e:
+        log(f"⚠️ 说话人改名失败（不影响笔记）：{e}")
+
     # 4) 出图：distilled.md → 分享图 PNG（HTML 是中间产物，只进缓存目录）
     if not args.no_card:
         try:
             import card
-            card.render(md, workdir=outdir / f".{audio.stem}.asr")
+            card.render(md, workdir=outdir / f".{audio.stem}.asr", style=args.style)
+            # 生成时提醒可换风格（别让人错过这个开关）
+            log(f"分享图风格：{args.style}（想换？--style "
+                f"swiss / editorial / riso / midnight / hand）")
         except Exception as e:
             log(f"⚠️ 分享图生成失败（不影响笔记）：{e}")
 
