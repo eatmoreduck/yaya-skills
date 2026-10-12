@@ -171,6 +171,21 @@ yaya-skills/
 
 所有 skill 统一使用 `yaya-` 前缀。
 
+## 关注 & 联系
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="assets/official-account.jpg" width="200" alt="公众号「多吃鸭」二维码"><br>
+      <sub>公众号「多吃鸭」· 追更新、提需求、唠嗑</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="assets/wechat-personal-qr.png" width="200" alt="个人微信二维码"><br>
+      <sub>个人微信 · 交流、提需求（看到就回）</sub>
+    </td>
+  </tr>
+</table>
+
 ## License
 
 MIT

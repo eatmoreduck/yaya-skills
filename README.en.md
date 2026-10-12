@@ -173,6 +173,21 @@ Keep the `yaya-` prefix for all skills. A local skill directory (e.g. `~/.zcode/
 
 All skills use the `yaya-` prefix.
 
+## Follow & Contact
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="assets/official-account.jpg" width="200" alt="WeChat official account QR"><br>
+      <sub>WeChat Official Account 「多吃鸭」 · updates, requests, chat</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="assets/wechat-personal-qr.png" width="200" alt="Personal WeChat QR"><br>
+      <sub>Personal WeChat · questions & requests, I reply fast</sub>
+    </td>
+  </tr>
+</table>
+
 ## License
 
 MIT
