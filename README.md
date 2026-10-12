@@ -151,7 +151,8 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
-│       ├── card.py          出图：distilled.md → 分享图 PNG
+│       ├── card.py          出图：distilled.md → 手绘风分享图 PNG
+│       ├── fonts/           手写体（OFL，出图用）
 │       └── out/             产物与音频归档（gitignore，数据跟着 skill 走）
 ├── README.md
 └── TECHNICAL.md             技术说明：架构概要 + 性能实测（README 只留链接）

@@ -61,7 +61,9 @@ audio.m4a ───────────────────────�
 **yaya-xspace（编排 + 蒸馏 + 出图）**
 - 蒸馏：智谱 `glm-5.3-flash`，`thinking` 显式 disabled（glm-5.x 默认开思考会吃光 token）；检查 `finish_reason=="length"`，截断时在笔记顶部打警告横幅；超时/空返回自动重试一次。
 - 提示词契约："蒸馏≠缩写"——砍寒暄/口头语/重复，但金句原话、关键名词、每人核心主张、枚举清单一项不许省。
-- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ 暗色霓虹风 HTML（PingFang SC）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记。
+- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ **自媒体手绘/白板风 HTML**（米白纸底 + 马克笔黑线 + 陶土橙高亮 + 手写体 + 便签/胶带/涂鸦，视觉语言参照 claude-motion-skill 的白板与手绘案例）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记。
+- 出图字体：`skills/yaya-xspace/fonts/` 内置两款开源手写体（站酷庆科黄油体=标题、站酷快乐体=正文，均 OFL 许可随附 `OFL.txt`），渲染时拷到 HTML 同目录相对引用，不依赖系统字体。
+- 说话人署名解析兼容多种 LLM 输出格式（`A / Punk`、`A（Punk，…）`、`Punk（A）`、纯姓名），并有 字母→真名 全局映射兜底——**署名永远显示真名，不显示 A/B/C/D 字母**。
 
 ### 1.4 数据布局
 

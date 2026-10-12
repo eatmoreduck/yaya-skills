@@ -37,7 +37,7 @@ Python 环境在 `skills/yaya-asr/.venv`（uv 管理，3.13），别用系统 py
 5. **输出路径用字符串拼接**（`_out()`），不用 `with_suffix`（stem 含点时错位）。
 6. **蒸馏 LLM 必须显式关思考**（`thinking: {"type":"disabled"}`，glm-5.x 默认开会吃光 token 返回空）；必须检查 `finish_reason=="length"` 并在 distilled.md 顶部打截断警告。Key=`ZAI_CODING_CN_API_KEY`。
 7. **多段 Space 陷阱**：主持人断线重连会新开 Space（新 ID），只拿到一段会得出"某内容不存在"的错误结论。转写稿出现重连信号（开场静音、"网络问题""你俩继续""刚才讲到哪"）要主动问用户是否有另一段。
-8. **分享图（card.py）**：蒸馏后自动把 distilled.md 渲染成 distilled.png（Chrome headless 两遍截图）。三条铁律：①出图失败**只警告**，绝不能当流程失败（Chrome 缺失是常态）；②HTML 中间产物只写 `.audio.asr`，输出目录只留 PNG；③解析 distilled.md 的列表必须同时兼容 `- ` 与 `1. `——同一条提示词两次蒸馏的输出格式都会变，别只认一种。
+8. **分享图（card.py）**：蒸馏后自动把 distilled.md 渲染成 distilled.png（自媒体手绘风；Chrome headless 两遍截图；字体在 `fonts/`，随 skill 走）。四条铁律：①出图失败**只警告**，绝不能当流程失败（Chrome 缺失是常态）；②HTML+字体副本只写 `.audio.asr`，输出目录只留 PNG；③解析 distilled.md 的列表必须同时兼容 `- ` 与 `1. `——同一条提示词两次蒸馏的输出格式都会变；④**说话人署名绝不显示 A/B/C/D 字母**——`_header_name()` 兼容 `A / Punk`、`A（Punk，…）`、`Punk（A）` 等多种格式并有全局映射兜底，动它之前先想清楚 LLM 还会换什么格式。
 
 ## 已知但刻意不做的
 

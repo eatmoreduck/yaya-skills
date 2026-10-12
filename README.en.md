@@ -153,7 +153,8 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
-│       ├── card.py          share-card renderer: distilled.md → PNG
+│       ├── card.py          share-card renderer: distilled.md → hand-drawn PNG
+│       ├── fonts/           handwriting fonts (OFL, used by the renderer)
 │       └── out/             outputs & audio archives (gitignored — data follows the skill)
 ├── README.md
 └── TECHNICAL.md             architecture overview + measured performance
