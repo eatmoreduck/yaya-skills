@@ -53,3 +53,5 @@ Python 环境在 `skills/yaya-asr/.venv`（uv 管理，3.13），别用系统 py
 ## 敏感区先读
 
 改 `asr.py` 的转写/分离/缓存逻辑前先读 `skills/yaya-asr/SKILL.md`（对外契约：输出文件清单是稳定接口，`<name>.labeled.json` 供下游程序消费，格式不许变）。改 `distill.py` 的提示词前先读 `skills/yaya-xspace/SKILL.md` 与根 README 的设计原则。
+
+**文档分工**（Leon 定的）：README（中英双版）只做产品介绍、别塞技术细节；架构概要、缓存/并行设计、性能实测放 `TECHNICAL.md`，README 里只留一行链接。

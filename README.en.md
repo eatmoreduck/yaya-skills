@@ -51,6 +51,8 @@ The full pipeline output of a real 119-minute Space — **["Noise After: Why You
 
 The payoff of this split is straightforward: only want the audio archived? Use `yaya-xdl`. Only need speaker turns? `yaya-diarize`. Need a transcript? `yaya-asr`. Only the full X Space → notes flow needs `yaya-xspace`.
 
+> 📐 **Implementation details and measured performance** live in [TECHNICAL.md](TECHNICAL.md) (in Chinese): model list, caching, parallel design, per-stage timings (119-minute audio → a 29.3-minute run).
+
 ## Why this exists
 
 **Good content has to be saved before it can be processed.** X offers no archive or search for Spaces, and replays are deleted after 30 days — **download is archiving**, otherwise that audio is gone forever.
@@ -151,8 +153,10 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
+│       ├── card.py          share-card renderer: distilled.md → PNG
 │       └── out/             outputs & audio archives (gitignored — data follows the skill)
-└── README.md
+├── README.md
+└── TECHNICAL.md             architecture overview + measured performance
 ```
 
 ## Adding a new skill

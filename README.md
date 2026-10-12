@@ -49,6 +49,8 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 这样拆的好处很直接：只想存音频的用 `yaya-xdl`；只想分说话人的用 `yaya-diarize`；要文字稿的用 `yaya-asr`；只有 X Space 一条龙才需要 `yaya-xspace`。
 
+> 📐 **内部实现与性能实测**见 [TECHNICAL.md](TECHNICAL.md)：模型清单、缓存机制、并行设计、每阶段耗时（119 分钟音频 → 29.3 分钟出稿）。
+
 ## 为什么做这个
 
 **好内容先得存住，才谈得上加工。** X 不提供 Space 归档或搜索，回放 30 天即删——**下载即归档**，否则那段语音永久消失。
@@ -149,8 +151,10 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
+│       ├── card.py          出图：distilled.md → 分享图 PNG
 │       └── out/             产物与音频归档（gitignore，数据跟着 skill 走）
-└── README.md
+├── README.md
+└── TECHNICAL.md             技术说明：架构概要 + 性能实测（README 只留链接）
 ```
 
 ## 如何新增一个 skill
