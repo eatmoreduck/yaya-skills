@@ -280,7 +280,7 @@ html{background:#F1F0EC}
 body{width:1080px;background:#F1F0EC;color:#101010;
  font-family:'Helvetica Neue','Hiragino Sans GB','Heiti SC','PingFang SC',sans-serif;}
 .wrap{position:relative;padding:64px 76px 0}
-.circle{position:absolute;top:176px;right:76px;width:128px;height:128px;border-radius:50%;background:#E02B20;}
+.block{position:absolute;top:176px;right:76px;width:116px;height:116px;background:#E02B20;}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:21px;font-weight:700;letter-spacing:2.5px}
 .top .r{opacity:.72}
 .hairline{height:1px;background:#101010;margin-top:26px}
@@ -305,7 +305,7 @@ h2{font-size:30px;font-weight:900;letter-spacing:2px}
  display:flex;justify-content:space-between;font-size:20px;font-weight:600;letter-spacing:1.5px}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#E02B20;margin-right:10px}
 </style></head><body><div class="wrap">
-<div class="circle"></div>
+<div class="block"></div>
 <div class="top"><span>eatmoreduck 多吃鸭 · yaya-skills</span><span class="r">X SPACE → 干货笔记</span></div>
 <div class="hairline"></div>
 <h1>[[TITLE]]</h1>
@@ -607,7 +607,7 @@ window.addEventListener('load', function(){
                  CONCL=concl_html, QUOTES=quote_html, ACTS=act_html)
 
 
-def build_html(d: dict, chars: str = "", style: str = "editorial") -> str:
+def build_html(d: dict, chars: str = "", style: str = "swiss") -> str:
     lmap = d.get("lmap") or {}
     if lmap:  # 正文里的字母指代全部换成真名（图上永不出现 ABCD）
         d = {**d,
@@ -705,7 +705,7 @@ def capture(html_path: Path, out_png: Path, bg: str = "#FFFFFF") -> None:
 
 
 def render(distilled_md: Path, out_png: Path | None = None,
-           workdir: Path | None = None, style: str = "editorial") -> Path:
+           workdir: Path | None = None, style: str = "swiss") -> Path:
     d = parse_distilled(distilled_md.read_text(encoding="utf-8"))
     chars = ""
     dialog = distilled_md.parent / "audio.dialog.txt"
@@ -734,7 +734,7 @@ def render(distilled_md: Path, out_png: Path | None = None,
 def main() -> int:
     ap = argparse.ArgumentParser(description="yaya-xspace：distilled.md → 分享图 PNG")
     ap.add_argument("md", help="distilled.md 路径")
-    ap.add_argument("--style", choices=STYLES, default="editorial", help="视觉风格（默认 editorial）")
+    ap.add_argument("--style", choices=STYLES, default="swiss", help="视觉风格（默认 swiss）")
     ap.add_argument("--out", type=Path, default=None, help="输出 PNG（默认同名 .png）")
     ap.add_argument("--workdir", type=Path, default=None, help="HTML 中间产物目录（默认临时目录）")
     args = ap.parse_args()

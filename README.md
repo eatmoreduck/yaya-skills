@@ -33,19 +33,16 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
 | [带说话人对话稿（节选）](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 29,930 字 / 10 位说话人） |
 
-<table>
-  <tr>
-    <td align="center" width="50%"><img src="assets/styles/editorial.png" alt="Editorial 杂志风"><br><sub><b>Editorial · 杂志风（默认）</b>——米色宋体、朱红方块</sub></td>
-    <td align="center" width="50%"><img src="assets/styles/riso.png" alt="Riso 丝印潮风"><br><sub><b>Riso · 丝印潮风</b>——蓝橙套印错位、网点</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="50%"><img src="assets/styles/swiss.png" alt="Swiss 国际风"><br><sub><b>Swiss · 国际风</b>——白底黑体红点、细线网格</sub></td>
-    <td align="center" width="50%"><img src="assets/styles/midnight.png" alt="Midnight 夜读"><br><sub><b>Midnight · 夜读</b>——暗底鎏金、宋体</sub></td>
-  </tr>
-</table>
+<img src="assets/styles/swiss-sample.png" width="520" alt="分享图样张（Swiss 国际风，全部内容的开头部分）">
 
-> 119 分钟音频 → 29.5 分钟出笔记 + 一张分享图（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
-> 分享图共 5 种风格（含手绘款 `hand`）：默认 **Editorial**，生成时可用 `--style swiss|editorial|riso|midnight|hand` 切换。
+分享图内置**四种卡面**，生成时 `--style` 切换（下列名称可直接点开看整图）：
+
+- [**Swiss 国际风**](assets/styles/swiss.png)（默认）——白底、重磅黑体、红色几何块、细线网格
+- [**Editorial 杂志风**](assets/styles/editorial.png)——米色宋体、朱红方块、新闻纸质感
+- [**Riso 丝印潮风**](assets/styles/riso.png)——蓝橙套印错位、网点、抓眼球
+- [**Midnight 夜读**](assets/styles/midnight.png)——暗底鎏金细线、宋体，高级感
+
+> 119 分钟音频 → 29.5 分钟出笔记 + 一张分享图（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。另有一款手绘实验款 `hand`（`--style hand`）。
 
 ## 定位
 

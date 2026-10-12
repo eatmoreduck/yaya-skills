@@ -30,7 +30,7 @@ bash skills/yaya-xspace/run.sh "<url>" --roster "浩哥,Tim,少白"
 # 省时间：跳过双参数交叉校验（转写时间减半）
 bash skills/yaya-xspace/run.sh "<url>" --no-crosscheck
 
-# 换分享图风格（默认 editorial 杂志风；可选 swiss/riso/midnight/hand）
+# 换分享图风格（默认 swiss 国际风；可选 editorial/riso/midnight/hand）
 bash skills/yaya-xspace/run.sh "<url>" --style riso
 ```
 

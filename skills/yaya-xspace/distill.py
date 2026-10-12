@@ -460,9 +460,9 @@ def main() -> int:
                     help="跑完删除音频。默认保留——下载即归档，重跑不用再下 81MB")
     ap.add_argument("--no-card", action="store_true",
                     help="跳过生成分享图（distilled.png）；默认生成，失败只警告不影响笔记")
-    ap.add_argument("--style", default="editorial",
+    ap.add_argument("--style", default="swiss",
                     choices=["swiss", "editorial", "riso", "midnight", "hand"],
-                    help="分享图风格（默认 editorial；可选 swiss/editorial/riso/midnight/hand）")
+                    help="分享图风格（默认 swiss；可选 swiss/editorial/riso/midnight/hand）")
     ap.add_argument("--transcript-only", action="store_true", help="只转写不蒸馏")
     args = ap.parse_args()
 

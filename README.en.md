@@ -35,19 +35,16 @@ The full pipeline output of a real 119-minute Space — **["Noise After: Why You
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
 | [Speaker-labeled transcript (excerpt)](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 29,930 chars, 10 speakers) |
 
-<table>
-  <tr>
-    <td align="center" width="50%"><img src="assets/styles/editorial.png" alt="Editorial magazine style card"><br><sub><b>Editorial · magazine (default)</b> — cream paper, Songti serif, vermilion blocks</sub></td>
-    <td align="center" width="50%"><img src="assets/styles/riso.png" alt="Risograph style card"><br><sub><b>Riso · risograph</b> — blue/orange misregistration, halftone</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="50%"><img src="assets/styles/swiss.png" alt="Swiss international style card"><br><sub><b>Swiss · international</b> — off-white, heavy grotesk, red dot</sub></td>
-    <td align="center" width="50%"><img src="assets/styles/midnight.png" alt="Midnight style card"><br><sub><b>Midnight</b> — dark, gold hairlines, serif</sub></td>
-  </tr>
-</table>
+<img src="assets/styles/swiss-sample.png" width="520" alt="Share card sample (Swiss style; the opening of the full card)">
 
-> 119 minutes of audio → a distilled note plus a share card in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
-> Five card styles are built in, including the hand-drawn `hand`: **Editorial** is the default — switch with `--style swiss|editorial|riso|midnight|hand`.
+Four card styles are built in — switch with `--style` (click a name to open the full-size card):
+
+- [**Swiss**](assets/styles/swiss.png) (default) — off-white, heavy grotesk, red geometric block, hairlines
+- [**Editorial**](assets/styles/editorial.png) — cream paper, Songti serif, vermilion blocks, newsprint feel
+- [**Riso**](assets/styles/riso.png) — risograph blue/orange misregistration, halftone dots
+- [**Midnight**](assets/styles/midnight.png) — dark, gold hairlines, serif, premium feel
+
+> 119 minutes of audio → a distilled note plus a share card in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`. There is also an experimental hand-drawn style, `hand`.
 
 ## Architecture
 

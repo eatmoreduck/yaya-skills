@@ -40,7 +40,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 | `--speakers N` | 推荐显式给**实际活跃说话人数**（强制聚类类数，不是上限：11 人场给 12；人少的录音务必给真实人数）。`-1` 自动聚类在长音频上易过分割 |
 | `--no-keep-audio` | 跑完删除音频。**默认保留**（下载即归档，重跑不用再下） |
 | `--no-card` | 跳过分享图（distilled.png）。默认出图，依赖本机 Chrome，失败只警告不影响笔记 |
-| `--style S` | 分享图风格：`swiss` 国际风 / `editorial` 杂志风（**默认**）/ `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板。出图后日志会提醒可随时换 |
+| `--style S` | 分享图风格：`swiss` 国际风（**默认**，白底黑体红方块） / `editorial` 杂志风 / `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板。出图后日志会提醒可随时换 |
 | `--llm-model M` | 蒸馏模型，默认 `glm-5.3-flash` |
 | `--transcript-only` | 只转写，不蒸馏 |
 | `--no-crosscheck` | 跳过双参数交叉校验（省一半时间） |
