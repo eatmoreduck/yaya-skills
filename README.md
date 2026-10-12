@@ -1,5 +1,7 @@
 # yaya-skills
 
+[English](README.en.md) | 简体中文
+
 ![yaya-skills](assets/banner.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
