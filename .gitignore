@@ -27,8 +27,9 @@ skills/*/models/
 *.webm
 *.part
 
-# 产物与音频归档不在仓库里：数据根目录是 YAYA_HOME（默认 ~/Documents/yaya），
-# 运行时绝不写 skill 自己的目录（装到别处时那是程序目录），也绝不用 /tmp。
+# 产物/音频归档/缓存：数据默认在 skill 自己的 out/ 下（YAYA_HOME 可搬），
+# 整目录不进 git——里面是私人 Space 笔记和音频
+skills/*/out/
 
 # 系统
 .DS_Store

@@ -75,19 +75,19 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 ## 数据放哪（产物与归档）
 
-skill 是程序，**运行时绝不写 skill 自己的目录**（skill 被安装后那里是程序目录，会被更新覆盖）。所有数据住统一的数据根目录：
+**数据跟着 skill 走**：产物、音频归档、缓存全部落在 skill 自己的 `out/` 里，删 skill 目录 = 删数据，`git pull` 更新也不影响（out/ 已 gitignore）。
 
 ```
-~/Documents/yaya/                  ← 数据根目录，环境变量 YAYA_HOME 可改
-└── spaces/<space-id>/             ← 一场 Space 一个目录，一切都在里面
-    ├── audio.m4a                  音频归档（默认保留——下载即归档）
-    ├── distilled.md               ★ 干货笔记
-    ├── audio.labeled.json / audio.dialog.txt / …   转写产物
-    └── .audio.asr/                中间缓存（删掉只损失重算时间）
+skills/yaya-xspace/out/<space-id>/   ← 一场 Space 一个目录，一切都在里面
+├── audio.m4a                        音频归档（默认保留——下载即归档）
+├── distilled.md                     ★ 干货笔记
+├── audio.labeled.json / audio.dialog.txt / …   转写产物
+└── .audio.asr/                      中间缓存（删掉只损失重算时间）
 ```
 
-- 换机器/重装 skill，数据不动；删一场 = 删一个目录。
-- 不想要音频加 `--no-keep-audio`；试演示类的一次性东西才用 /tmp。
+- 想搬到别处（如插件市场安装到版本化缓存目录）：`export YAYA_HOME=/some/where`，数据就落 `$YAYA_HOME/spaces/`。
+- 删一场 = 删一个目录；不想要音频加 `--no-keep-audio`。
+- ⚠️ `out/` 是你的私人数据（笔记+音频），已在 `.gitignore` 里——永远不会被 git 提交上去。
 
 ## 安装
 
@@ -134,9 +134,9 @@ yaya-skills/
 │       ├── SKILL.md
 │       ├── README.md
 │       ├── run.sh
-│       └── distill.py
+│       ├── distill.py
+│       └── out/             产物与音频归档（gitignore，数据跟着 skill 走）
 └── README.md
-# 产物与音频归档在 ~/Documents/yaya/（YAYA_HOME 可改），不进仓库
 ```
 
 ## 如何新增一个 skill

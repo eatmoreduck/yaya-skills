@@ -35,10 +35,10 @@ bash skills/yaya-xspace/run.sh "<url>" --no-crosscheck
 
 ## 产物
 
-数据根目录 `YAYA_HOME`（默认 `~/Documents/yaya`），一场一个目录：
+产物默认落在 skill 自己的 `out/`（数据跟 skill 走；`YAYA_HOME` 可改根目录），一场一个目录：
 
 ```
-~/Documents/yaya/spaces/<space-id>/
+skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a               音频归档（默认保留——下载即归档）
 ├── distilled.md            ★ 最终干货（按说话人分组 + 关键名词总表）
 ├── audio.labeled.json      ★ 结构化转写 {speaker, start, end, text}

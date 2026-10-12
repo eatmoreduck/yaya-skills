@@ -77,19 +77,19 @@ Running locally also means: free, zero logins, no cloud accounts.
 
 ## Where your data lives (outputs & archives)
 
-Skills are programs — **they never write into their own directory at runtime** (once installed, that is a program directory that gets overwritten on updates). All data lives under one data root:
+**Data follows the skill**: outputs, audio archives and caches all live under the skill's own `out/` — deleting the skill folder deletes the data, and `git pull` updates leave it untouched (`out/` is gitignored).
 
 ```
-~/Documents/yaya/                  ← data root; override with the YAYA_HOME env var
-└── spaces/<space-id>/             ← one directory per Space, everything inside
-    ├── audio.m4a                  audio archive (kept by default — download = archive)
-    ├── distilled.md               ★ the distilled notes
-    ├── audio.labeled.json / audio.dialog.txt / …   transcript artifacts
-    └── .audio.asr/                intermediate caches (deleting only costs recompute time)
+skills/yaya-xspace/out/<space-id>/   ← one directory per Space, everything inside
+├── audio.m4a                        audio archive (kept by default — download = archive)
+├── distilled.md                     ★ the distilled notes
+├── audio.labeled.json / audio.dialog.txt / …   transcript artifacts
+└── .audio.asr/                      intermediate caches (deleting only costs recompute time)
 ```
 
-- Switch machines or reinstall skills — the data stays. Deleting one Space = deleting one directory.
-- Don't want the audio kept? Add `--no-keep-audio`. Only throwaway demo stuff belongs in /tmp.
+- To relocate (e.g. when installed via a marketplace with versioned cache dirs): `export YAYA_HOME=/some/where`, and data goes to `$YAYA_HOME/spaces/`.
+- Deleting one Space = deleting one directory. Don't want the audio kept? Add `--no-keep-audio`.
+- ⚠️ `out/` is your private data (notes + audio) and is listed in `.gitignore` — it will never be committed.
 
 ## Install
 
@@ -136,9 +136,9 @@ yaya-skills/
 │       ├── SKILL.md
 │       ├── README.md
 │       ├── run.sh
-│       └── distill.py
+│       ├── distill.py
+│       └── out/             outputs & audio archives (gitignored — data follows the skill)
 └── README.md
-# Outputs and audio archives live in ~/Documents/yaya/ (YAYA_HOME to override) — not in the repo
 ```
 
 ## Adding a new skill

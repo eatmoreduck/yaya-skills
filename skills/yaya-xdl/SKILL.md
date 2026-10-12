@@ -28,15 +28,15 @@ X 不提供 Space 归档或搜索，回放 30 天即删——**下载即归档**
 
 ```bash
 bash {baseDir}/run.sh "https://x.com/i/spaces/<13位ID>"
-bash {baseDir}/run.sh "<url>" -o /path/to/archive    # 指定输出目录（默认 <YAYA_HOME>/spaces/<space-id>/，即 ~/Documents/yaya）
+bash {baseDir}/run.sh "<url>" -o /path/to/archive    # 指定输出目录（默认 skill 自己的 out/<space-id>/）
 ```
 
 ## 产物
 
-默认归档到数据根目录（`YAYA_HOME`，默认 `~/Documents/yaya`），一场一个目录：
+默认归档到 skill 自己的 `out/`（`YAYA_HOME` 可改根目录），一场一个目录：
 
 ```
-~/Documents/yaya/spaces/<space-id>/
+skills/yaya-xdl/out/<space-id>/
 ├── audio.m4a   音频（先下临时名、完整后原子改名——绝无半截文件冒充全量）
 └── meta.json   标题/时长等元数据（yaya-xspace 会读它做笔记头）
 ```

@@ -30,11 +30,13 @@ AUDIO_EXT = {".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".wma"}
 
 
 def data_root() -> Path:
-    """数据根目录（YAYA_HOME 可覆盖，默认 ~/Documents/yaya）。
-    归档绝不放 /tmp（重启即清）也绝不放 skill 目录（可能被安装到只读位置）。"""
+    """归档根目录：默认 skill 自己的 out/——skill 数据跟 skill 走。
+    需要搬走时用 YAYA_HOME。"""
     import os
     env = os.environ.get("YAYA_HOME", "").strip()
-    return Path(env).expanduser() if env else Path.home() / "Documents" / "yaya"
+    if env:
+        return Path(env).expanduser() / "spaces"
+    return SKILL_DIR / "out"
 
 
 def log(msg: str) -> None:
@@ -93,8 +95,8 @@ def main() -> int:
         description="yaya-xdl：X Space 音频下载（下载即归档）")
     ap.add_argument("src", help="Space 链接或 13 位 ID")
     ap.add_argument("-o", "--outdir", default=None,
-                    help="输出目录（默认 <YAYA_HOME>/spaces/<space-id>/，"
-                         "YAYA_HOME 默认 ~/Documents/yaya）")
+                    help="输出目录（默认 skill 自己的 out/<space-id>/，"
+                         "可用 YAYA_HOME 改根目录）")
     args = ap.parse_args()
 
     url = args.src.strip()
@@ -106,7 +108,7 @@ def main() -> int:
     sid = m.group(1)
 
     outdir = (Path(args.outdir).expanduser().resolve() if args.outdir
-              else data_root() / "spaces" / sid)
+              else data_root() / sid)
     outdir.mkdir(parents=True, exist_ok=True)
     log(f"工作目录: {outdir}")
 
