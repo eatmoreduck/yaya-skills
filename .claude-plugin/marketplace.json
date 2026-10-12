@@ -1,0 +1,25 @@
+{
+  "name": "yaya-skills",
+  "owner": {
+    "name": "Leon (eatmoreduck)",
+    "url": "https://github.com/eatmoreduck"
+  },
+  "metadata": {
+    "description": "Lightweight skills for turning recordings into writing: local speech-to-text, then X Spaces to distilled notes.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "yaya-skills",
+      "description": "Audio-to-content pipeline: local speech-to-text and X Space distillation.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/yaya-asr",
+        "./skills/yaya-diarize",
+        "./skills/yaya-xdl",
+        "./skills/yaya-xspace"
+      ]
+    }
+  ]
+}

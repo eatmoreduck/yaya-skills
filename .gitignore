@@ -1,0 +1,38 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.tmp
+
+# ZCode / 工作流本机产物（全局 ignore 已盖，这里兜底别的机器）
+.zcode/
+
+# 模型权重（大文件，首次运行由 run.sh 自动下载）
+skills/*/models/
+
+# yaya-diarize 单独使用时的缓存目录（流水线内已被 out/ 白名单兜住）
+**/.*.diar/
+
+# 音频/视频（大文件，不进 git；原始文件自己保管）
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.flac
+*.ogg
+*.opus
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.part
+
+# 产物与音频归档不在仓库里：数据根目录是 YAYA_HOME（默认 ~/Documents/yaya），
+# 运行时绝不写 skill 自己的目录（装到别处时那是程序目录），也绝不用 /tmp。
+
+# 系统
+.DS_Store
+
+# 密钥（绝不能提交）
+.env
+*.key
