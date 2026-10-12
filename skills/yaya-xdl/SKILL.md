@@ -33,7 +33,7 @@ bash {baseDir}/run.sh "<url>" -o /path/to/archive    # 指定输出目录（默�
 
 ## 产物
 
-默认归档到 skill 自己的 `out/`（`YAYA_HOME` 可改根目录），一场一个目录：
+默认归档到 skill 自己的 `out/`，一场一个目录：
 
 ```
 skills/yaya-xdl/out/<space-id>/

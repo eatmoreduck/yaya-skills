@@ -45,7 +45,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 
 ## 产物
 
-产物默认落在 skill 自己的 `out/`（数据跟 skill 走；`YAYA_HOME` 可改根目录），一场一个目录，音频默认保留：
+产物就落在 skill 自己的 `out/`（数据跟 skill 走），一场一个目录，音频默认保留：
 
 ```
 skills/yaya-xspace/out/<space-id>/

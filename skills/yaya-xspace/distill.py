@@ -32,14 +32,8 @@ XDL_DIR = REPO_ROOT / "yaya-xdl"                    # 兄弟 skill：下载
 XDL_RUN = XDL_DIR / "run.sh"
 
 
-def data_root() -> Path:
-    """产物根目录：默认就是 skill 自己目录下的 out/——skill 数据跟 skill 走，
-    删 skill 目录=删数据，git pull 也不动未跟踪的 out/。
-    需要搬走时用 YAYA_HOME（如插件市场安装到版本化缓存目录的场景）。"""
-    env = os.environ.get("YAYA_HOME", "").strip()
-    if env:
-        return Path(env).expanduser() / "spaces"
-    return SKILL_DIR / "out"
+OUT_ROOT = SKILL_DIR / "out"    # 产物根目录：就在 skill 自己目录下。数据跟 skill 走——
+                                # 删 skill 目录=删数据，git pull 也不动未跟踪的 out/。
 
 ZAI_URL = "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
 ZAI_KEY_ENV = "ZAI_CODING_CN_API_KEY"
@@ -291,8 +285,8 @@ def main() -> int:
         sys.stderr.write(f"错误：看起来是本地文件路径，但文件不存在：{arg}\n")
         return 2
 
-    # 决定工作目录（默认 skill 自己的 out/，YAYA_HOME 可搬走）
-    out_root = data_root()
+    # 决定工作目录（就在 skill 自己的 out/ 下）
+    out_root = OUT_ROOT
     if local:
         src = Path(arg).expanduser().resolve()
         meta = {"title": src.stem, "duration": "", "is_live": ""}

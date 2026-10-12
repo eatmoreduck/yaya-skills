@@ -20,10 +20,21 @@ English | [简体中文](README.md)
 
 ```bash
 bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13-char-id>"
-# → ~/Documents/yaya/spaces/<id>/distilled.md
+# → skills/yaya-xspace/out/<id>/distilled.md
 ```
 
 Models download automatically on first run. A two-hour Space takes about 30 minutes — GPU transcription and speaker separation run in parallel.
+
+## See it on a real session
+
+The full pipeline output of a real Space — **["Noise After: The X-Creator Explosion — Are You Ready?"](https://x.com/i/spaces/1oKMvNAwRdNGQ)** (Chinese, hosted by 蜗牛King, 114 minutes, 11 active speakers):
+
+| Artifact | What you're looking at |
+|---|---|
+| [**distilled.md**](demo/1oKMvNAwRdNGQ/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
+| [Speaker-labeled transcript (excerpt)](demo/1oKMvNAwRdNGQ/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 27,232 chars, 11 speakers) |
+
+> Source Space ID: `1oKMvNAwRdNGQ`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
 
 ## Architecture
 
@@ -87,9 +98,8 @@ skills/yaya-xspace/out/<space-id>/   ← one directory per Space, everything ins
 └── .audio.asr/                      intermediate caches (deleting only costs recompute time)
 ```
 
-- To relocate (e.g. when installed via a marketplace with versioned cache dirs): `export YAYA_HOME=/some/where`, and data goes to `$YAYA_HOME/spaces/`.
 - Deleting one Space = deleting one directory. Don't want the audio kept? Add `--no-keep-audio`.
-- ⚠️ `out/` is your private data (notes + audio) and is listed in `.gitignore` — it will never be committed.
+- ⚠️ `out/` is your private data (notes + audio) and is listed in `.gitignore` — it will never be committed. (`demo/` is a hand-picked public sample, unrelated to `out/`.)
 
 ## Install
 
@@ -121,6 +131,7 @@ npx skills add eatmoreduck/yaya-skills
 yaya-skills/
 ├── .claude-plugin/
 │   └── marketplace.json     ★ declares which skills this repo ships
+├── demo/                    ★ sample output from a real session (hand-picked, public)
 ├── skills/
 │   ├── yaya-asr/            atomic (no deps)
 │   │   ├── SKILL.md

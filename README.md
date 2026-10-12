@@ -18,10 +18,21 @@
 
 ```bash
 bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
-# → ~/Documents/yaya/spaces/<id>/distilled.md
+# → skills/yaya-xspace/out/<id>/distilled.md
 ```
 
 首次运行自动下载模型；两小时的场约 30 分钟出稿（GPU 转写与说话人分离并行跑）。
+
+## 看个真实效果（Demo）
+
+一场真实 Space 的完整产出——**[《噪音之后：X 博主大爆炸 你准备好了吗？》](https://x.com/i/spaces/1oKMvNAwRdNGQ)**（蜗牛King 主持，114 分钟，11 位活跃说话人）：
+
+| 产出 | 看什么 |
+|---|---|
+| [**distilled.md**](demo/1oKMvNAwRdNGQ/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
+| [带说话人对话稿（节选）](demo/1oKMvNAwRdNGQ/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 27,232 字 / 11 位说话人） |
+
+> 源 Space ID：`1oKMvNAwRdNGQ`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
 
 ## 定位
 
@@ -85,9 +96,8 @@ skills/yaya-xspace/out/<space-id>/   ← 一场 Space 一个目录，一切都�
 └── .audio.asr/                      中间缓存（删掉只损失重算时间）
 ```
 
-- 想搬到别处（如插件市场安装到版本化缓存目录）：`export YAYA_HOME=/some/where`，数据就落 `$YAYA_HOME/spaces/`。
 - 删一场 = 删一个目录；不想要音频加 `--no-keep-audio`。
-- ⚠️ `out/` 是你的私人数据（笔记+音频），已在 `.gitignore` 里——永远不会被 git 提交上去。
+- ⚠️ `out/` 是你的私人数据（笔记+音频），已在 `.gitignore` 里——永远不会被 git 提交上去。（`demo/` 是手工挑选、随仓库公开的样例，与 out/ 无关。）
 
 ## 安装
 
@@ -119,6 +129,7 @@ npx skills add eatmoreduck/yaya-skills
 yaya-skills/
 ├── .claude-plugin/
 │   └── marketplace.json     ★ 声明本仓库包含哪些 skill
+├── demo/                    ★ 真实场次的示例产出（手工挑选，随仓库公开）
 ├── skills/
 │   ├── yaya-asr/            原子能力（无依赖）
 │   │   ├── SKILL.md

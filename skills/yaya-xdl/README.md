@@ -9,7 +9,7 @@ bash skills/yaya-xdl/run.sh "https://x.com/i/spaces/<13位ID>"
 bash skills/yaya-xdl/run.sh "<url>" -o /path/to/archive   # 自定义归档目录
 ```
 
-产物：`skills/yaya-xdl/out/<space-id>/audio.m4a`（数据跟着 skill 走；完整下载后才落正式名，中断残留自动清理）+ `meta.json`（标题/时长）。`YAYA_HOME` 可把根目录搬到别处。
+产物：`skills/yaya-xdl/out/<space-id>/audio.m4a`（数据跟着 skill 走；完整下载后才落正式名，中断残留自动清理）+ `meta.json`（标题/时长）。
 
 - 依赖：`uv`（yt-dlp 用 uvx 临时跑，零安装）。纯标准库实现，系统 python3 即可。
 - 只能下**开了录音、未过留存期（~30 天）**的 Space；私密 Space 需 cookie。

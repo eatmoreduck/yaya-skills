@@ -13,7 +13,7 @@ skills/
 ```
 
 - **依赖单向**：`yaya-xspace → yaya-xdl + yaya-asr`、`yaya-asr → yaya-diarize`；兄弟 skill 一律经 `run.sh` 子进程调用、靠相邻目录寻址。xdl/asr/diarize 是原子能力，互不依赖、不认识业务概念。不许反向依赖、不许复制实现。
-- **数据位置**（Leon 拍板）：产物/音频归档/缓存**默认放 skill 自己的 `out/`**——skill 数据跟 skill 走，删 skill 目录=删数据，`git pull` 不动未跟踪的 out/。`data_root()`（xdl.py/distill.py 各一份三行实现，属刻意独立）可被 `YAYA_HOME` 环境变量搬到 `$YAYA_HOME/spaces/`（留给插件市场版本化缓存目录等场景）。`skills/*/out/` 已 .gitignore **整目录忽略**——里面是私人 Space 笔记+音频，绝不能进公开仓库。不用 /tmp 存要留的东西（重启即清，违背下载即归档）。音频默认保留（下载即归档），`--no-keep-audio` 才删。
+- **数据位置**（Leon 拍板，无例外）：产物/音频归档/缓存一律放 skill 自己的 `out/`（distill.py/xdl.py 各自的 `OUT_ROOT` 常量）——skill 数据跟 skill 走，删 skill 目录=删数据，`git pull` 不动未跟踪的 out/。**没有 YAYA_HOME 之类的搬移开关**——数据不许放 skill 外。`skills/*/out/` 已 .gitignore **整目录忽略**（私人 Space 笔记+音频绝不能进公开仓库）；`demo/` 是手工挑选、随仓库公开的样例产出，别和 out/ 混。不用 /tmp 存要留的东西（重启即清，违背下载即归档）。音频默认保留（下载即归档），`--no-keep-audio` 才删。
 - **asr 内部流水线并行**：转写（MLX/GPU）开始时以后台进程拉起 yaya-diarize（CPU 分离），`transcribe` 返回后 `wait()`。实测 GPU/CPU 零争抢；**但两个 MLX 进程绝不能并发**（会崩/拖死）——别把并行改成"再起一个转写进程"。
 - **新增 skill 必须登记** `.claude-plugin/marketplace.json` 的 `plugins[0].skills[]`——`source: "./"` 且显式列出时只加载列出的目录，不会自动扫描 `skills/`。步骤见根 README「如何新增一个 skill」。
 
