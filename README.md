@@ -25,16 +25,7 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 ## 定位
 
-```
-       原子能力（互不依赖）                  场景能力                  输出（规划中）
-  ──────────────────────────      ─────────────────────────    ──────────────
-    yaya-xdl      ┐
-  （Space→音频）    │
-    yaya-asr      ├──←──  yaya-xspace                →   写作 / 发布 skill
-  （音频→文字）     │       （编排：下载→转写∥分离→蒸馏）
-    yaya-diarize  ┘
-  （音频→谁在何时说话）
-```
+![yaya-skills 流水线](assets/architecture.png)
 
 **分层原则：上层依赖下层，依赖单向。**
 

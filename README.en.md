@@ -27,16 +27,7 @@ Models download automatically on first run. A two-hour Space takes about 30 minu
 
 ## Architecture
 
-```
-     Atomic skills (no interdeps)           Scenario skill            Output (planned)
-  ──────────────────────────      ─────────────────────────    ──────────────
-    yaya-xdl      ┐
-  (Space → audio)  │
-    yaya-asr      ├──←──  yaya-xspace                →   writing / publishing skills
-  (audio → text)   │       (orchestrates: download → transcribe ∥ diarize → distill)
-    yaya-diarize  ┘
-  (audio → who spoke when)
-```
+![yaya-skills pipeline](assets/architecture.png)
 
 **Layering rule: upper layers depend on lower ones, one direction only.**
 
