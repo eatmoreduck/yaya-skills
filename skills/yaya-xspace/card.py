@@ -280,7 +280,11 @@ html{background:#F1F0EC}
 body{width:1080px;background:#F1F0EC;color:#101010;
  font-family:'Helvetica Neue','Hiragino Sans GB','Heiti SC','PingFang SC',sans-serif;}
 .wrap{position:relative;padding:64px 76px 0}
-.block{position:absolute;top:176px;right:76px;width:116px;height:116px;background:#E02B20;}
+.waves{position:absolute;top:172px;right:76px;width:150px;height:150px;
+ background:radial-gradient(circle at 100% 0%,transparent 33px,#E02B20 33px 42px,transparent 42px),
+ radial-gradient(circle at 100% 0%,transparent 61px,#E02B20 61px 70px,transparent 70px),
+ radial-gradient(circle at 100% 0%,transparent 89px,#E02B20 89px 98px,transparent 98px);}
+.waves::after{content:"";position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:#E02B20;}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:21px;font-weight:700;letter-spacing:2.5px}
 .top .r{opacity:.72}
 .hairline{height:1px;background:#101010;margin-top:26px}
@@ -305,7 +309,7 @@ h2{font-size:30px;font-weight:900;letter-spacing:2px}
  display:flex;justify-content:space-between;font-size:20px;font-weight:600;letter-spacing:1.5px}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#E02B20;margin-right:10px}
 </style></head><body><div class="wrap">
-<div class="block"></div>
+<div class="waves"></div>
 <div class="top"><span>eatmoreduck 多吃鸭 · yaya-skills</span><span class="r">X SPACE → 干货笔记</span></div>
 <div class="hairline"></div>
 <h1>[[TITLE]]</h1>

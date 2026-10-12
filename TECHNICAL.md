@@ -61,7 +61,7 @@ audio.m4a ───────────────────────�
 **yaya-xspace（编排 + 蒸馏 + 出图）**
 - 蒸馏：智谱 `glm-5.3-flash`，`thinking` 显式 disabled（glm-5.x 默认开思考会吃光 token）；检查 `finish_reason=="length"`，截断时在笔记顶部打警告横幅；超时/空返回自动重试一次。
 - 提示词契约："蒸馏≠缩写"——砍寒暄/口头语/重复，但金句原话、关键名词、每人核心主张、枚举清单一项不许省。
-- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ **五种风格 HTML**（`--style` 切换：`swiss` 国际主义【默认】/ `editorial` 杂志风 / `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板；视觉语言参照 claude-motion-skill 案例预览；swiss 的红色几何块刻意用方块不用圆——**避免白底红圆触发"日之丸"联想**）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记；出图后日志提醒可换风格。
+- 出图 `card.py`：解析 distilled.md（兼容 `- ` 与 `1. ` 两种列表格式）→ **五种风格 HTML**（`--style` 切换：`swiss` 国际主义【默认】/ `editorial` 杂志风 / `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板；视觉语言参照 claude-motion-skill 案例预览；swiss 右上角用**红色声波弧**（三道同心弧+源点，纯 CSS radial-gradient）——白底实心红圆会被联想"日之丸"，声波弧既避嫌又正好呼应"把音频变成文字"的主题）→ **Chrome headless 两遍截图**（第一遍 `--dump-dom` 把内容高度写进 `<title>` 量高，第二遍按精确高度 `--screenshot` 出图，避免长图截断/留白）。HTML 中间产物只进 `.audio.asr/`，输出目录只多一张 PNG；找不到 Chrome 时警告跳过，不影响笔记；出图后日志提醒可换风格。
 - 出图字体：`skills/yaya-xspace/fonts/` 内置两款开源手写体（站酷庆科黄油体=标题、站酷快乐体=正文，均 OFL 许可随附 `OFL.txt`，**仅 `hand` 风格使用**；其余风格用系统宋体/黑体，可读性更好），渲染时拷到 HTML 同目录相对引用，不依赖系统字体。卡图首行品牌 = `eatmoreduck 多吃鸭 · yaya-skills`。
 - **说话人改名**：蒸馏后 `apply_speaker_names()` 从 distilled.md 解析 字母→真名 映射（复用 card.py 的 `_header_name()`，兼容 `A / Punk`、`A（Punk，…）`、`Punk（A）`、纯姓名等 LLM 惯用格式），把**对外文本产物**（dialog.txt / dialog.srt / distilled.md）里的字母标签换成真名——**对外永不出现 A/B/C/D**；映射落盘 `speaker_names.json`，供复查与幂等续跑。`labeled.json` / `turns.json` 是机器接口，**保持原始字母不变**。解析不出名字的字母保留原字母；改名失败只警告，绝不影响主流程。
 

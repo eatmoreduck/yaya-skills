@@ -35,11 +35,11 @@ The full pipeline output of a real 119-minute Space — **["Noise After: Why You
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
 | [Speaker-labeled transcript (excerpt)](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 29,930 chars, 10 speakers) |
 
-<img src="assets/styles/swiss-sample.png" width="520" alt="Share card sample (Swiss style; the opening of the full card)">
+<img src="demo/1AKEmvYqbrOKL/distilled.png" width="520" alt="Share card (Swiss style, full-length card — click to enlarge)">
 
 Four card styles are built in — switch with `--style` (click a name to open the full-size card):
 
-- [**Swiss**](assets/styles/swiss.png) (default) — off-white, heavy grotesk, red geometric block, hairlines
+- [**Swiss**](assets/styles/swiss.png) (default) — off-white, heavy grotesk, red sound-wave arcs, hairlines
 - [**Editorial**](assets/styles/editorial.png) — cream paper, Songti serif, vermilion blocks, newsprint feel
 - [**Riso**](assets/styles/riso.png) — risograph blue/orange misregistration, halftone dots
 - [**Midnight**](assets/styles/midnight.png) — dark, gold hairlines, serif, premium feel
