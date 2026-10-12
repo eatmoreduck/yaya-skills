@@ -25,14 +25,14 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 ## 看个真实效果（Demo）
 
-一场真实 Space 的完整产出——**[《噪音之后：X 博主大爆炸 你准备好了吗？》](https://x.com/i/spaces/1oKMvNAwRdNGQ)**（蜗牛King 主持，114 分钟，11 位活跃说话人）：
+**[《噪音之后：为什么做IP一定要有自己的"理论"》](https://x.com/i/spaces/1AKEmvYqbrOKL)**——一场真实 Space 的完整产出（119 分钟 / 10 位说话人，聊 IP、人设与流量变现）：
 
 | 产出 | 看什么 |
 |---|---|
-| [**distilled.md**](demo/1oKMvNAwRdNGQ/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
-| [带说话人对话稿（节选）](demo/1oKMvNAwRdNGQ/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 27,232 字 / 11 位说话人） |
+| [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
+| [带说话人对话稿（节选）](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 29,930 字 / 10 位说话人） |
 
-> 源 Space ID：`1oKMvNAwRdNGQ`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
+> 119 分钟音频 → 29.5 分钟出笔记（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
 
 ## 定位
 

@@ -316,6 +316,7 @@ def main() -> int:
         audio = dest
     else:
         audio = download_via_xdl(url, outdir)
+        meta = _load_meta(outdir)  # 重新读：meta.json 刚由 xdl 写入（首跑时上面那次读不到）
 
     # 2) 转写（交给 yaya-asr）
     segs = run_asr(audio, outdir, args.speakers, args.no_crosscheck)

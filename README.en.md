@@ -27,14 +27,14 @@ Models download automatically on first run. A two-hour Space takes about 30 minu
 
 ## See it on a real session
 
-The full pipeline output of a real Space — **["Noise After: The X-Creator Explosion — Are You Ready?"](https://x.com/i/spaces/1oKMvNAwRdNGQ)** (Chinese, hosted by 蜗牛King, 114 minutes, 11 active speakers):
+The full pipeline output of a real 119-minute Space — **["Noise After: Why Your IP Needs Its Own 'Theory'"](https://x.com/i/spaces/1AKEmvYqbrOKL)** (Chinese, 10 speakers — on personal IP, persona and monetization):
 
 | Artifact | What you're looking at |
 |---|---|
-| [**distilled.md**](demo/1oKMvNAwRdNGQ/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
-| [Speaker-labeled transcript (excerpt)](demo/1oKMvNAwRdNGQ/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 27,232 chars, 11 speakers) |
+| [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
+| [Speaker-labeled transcript (excerpt)](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 29,930 chars, 10 speakers) |
 
-> Source Space ID: `1oKMvNAwRdNGQ`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
+> 119 minutes of audio → a distilled note in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
 
 ## Architecture
 
