@@ -272,6 +272,8 @@ def main() -> int:
                     help="（已默认保留，此参数仅为兼容）")
     ap.add_argument("--no-keep-audio", action="store_true",
                     help="跑完删除音频。默认保留——下载即归档，重跑不用再下 81MB")
+    ap.add_argument("--no-card", action="store_true",
+                    help="跳过生成分享图（distilled.png）；默认生成，失败只警告不影响笔记")
     ap.add_argument("--transcript-only", action="store_true", help="只转写不蒸馏")
     args = ap.parse_args()
 
@@ -342,6 +344,14 @@ def main() -> int:
     log("=" * 60)
     log(f"完成！{md}")
     log("=" * 60)
+
+    # 4) 出图：distilled.md → 分享图 PNG（HTML 是中间产物，只进缓存目录）
+    if not args.no_card:
+        try:
+            import card
+            card.render(md, workdir=outdir / f".{audio.stem}.asr")
+        except Exception as e:
+            log(f"⚠️ 分享图生成失败（不影响笔记）：{e}")
 
     if args.no_keep_audio and not local:
         # 只删音频容器（后缀过滤，见 AGENTS.md 硬约束）；

@@ -39,6 +39,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 |---|---|
 | `--speakers N` | 推荐显式给**实际活跃说话人数**（强制聚类类数，不是上限：11 人场给 12；人少的录音务必给真实人数）。`-1` 自动聚类在长音频上易过分割 |
 | `--no-keep-audio` | 跑完删除音频。**默认保留**（下载即归档，重跑不用再下） |
+| `--no-card` | 跳过分享图（distilled.png）。默认出图，依赖本机 Chrome，失败只警告不影响笔记 |
 | `--llm-model M` | 蒸馏模型，默认 `glm-5.3-flash` |
 | `--transcript-only` | 只转写，不蒸馏 |
 | `--no-crosscheck` | 跳过双参数交叉校验（省一半时间） |
@@ -51,6 +52,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a                 音频归档（下载即归档；--no-keep-audio 才删）
 ├── distilled.md              ★ 最终干货（按说话人分组 + 关键名词总表）
+├── distilled.png             ★ 分享图（笔记自动渲染成一张可直接发推的图）
 ├── <audio>.labeled.json      ★ 结构化转写（机器接口）
 ├── <audio>.dialog.txt        ★ 带说话人的对话稿 A：文本
 └── <audio>.dialog.srt          带说话人的字幕

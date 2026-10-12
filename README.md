@@ -10,7 +10,7 @@
 ![Platform](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)
 ![Local](https://img.shields.io/badge/%E9%9F%B3%E9%A2%91-%E4%B8%8D%E5%87%BA%E6%9C%AC%E6%9C%BA-success)
 
-> **首期主打：X Space 录音转文字。** 给没时间听、或忘了听的人——一条链接，一场两小时的 Space 变成按说话人分组、金句原话全保留的中文干货笔记。
+> **首期主打：X Space 录音转文字。** 给没时间听、或忘了听的人——一条链接，一场两小时的 Space 变成按说话人分组、金句原话全保留的中文干货笔记，**外加一张可直接发出去的分享图**。
 
 **yaya-skills 的核心逻辑是一条创作流流水线**：素材进来，作品出去。第一波的素材入口是 X Space（[yaya-xspace](skills/yaya-xspace/)），背后由下载 / 转写 / 分离三个原子 skill 支撑；后续会增加写作、发布等更多 skill，逐步补完整条创作链。音频全程不出本机。
 
@@ -29,10 +29,13 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 | 产出 | 看什么 |
 |---|---|
+| [**distilled.png**](demo/1AKEmvYqbrOKL/distilled.png) | ★ **一张图版**：笔记自动渲染成的分享图，可直接发推 |
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ 最终干货笔记：一句话总结 / 核心结论 / 各说话人核心发言 / 关键名词总表 / 争议与分歧 / 可行动项 |
 | [带说话人对话稿（节选）](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | 中间产物：从音频到"谁说了什么"（完整稿 29,930 字 / 10 位说话人） |
 
-> 119 分钟音频 → 29.5 分钟出笔记（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
+<img src="demo/1AKEmvYqbrOKL/distilled.png" width="520" alt="分享图示例">
+
+> 119 分钟音频 → 29.5 分钟出笔记 + 一张分享图（GPU 转写与 CPU 分离全程并行）。源 Space ID：`1AKEmvYqbrOKL`。X 回放 30 天后失效——文字产出留档在本仓库，音频留在本地 `out/`。
 
 ## 定位
 

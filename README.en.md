@@ -10,7 +10,7 @@ English | [简体中文](README.md)
 ![Platform](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)
 ![Local](https://img.shields.io/badge/audio-never%20leaves%20your%20machine-success)
 
-> **Wave 1: turn X Space audio into text.** Built for people who don't have time to listen — or forgot to. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim.
+> **Wave 1: turn X Space audio into text.** Built for people who don't have time to listen — or forgot to. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim — **plus a ready-to-post share card**.
 
 **The core idea behind yaya-skills is a creation pipeline**: material goes in, work comes out. The first material source is X Space ([yaya-xspace](skills/yaya-xspace/)), backed by three atomic skills for download / transcription / speaker separation. More skills — writing, publishing — will join to complete the chain. Audio never leaves your machine.
 
@@ -31,10 +31,13 @@ The full pipeline output of a real 119-minute Space — **["Noise After: Why You
 
 | Artifact | What you're looking at |
 |---|---|
+| [**distilled.png**](demo/1AKEmvYqbrOKL/distilled.png) | ★ **The one-image card** — the notes auto-rendered into a share card, ready to post |
 | [**distilled.md**](demo/1AKEmvYqbrOKL/distilled.md) | ★ The final distilled notes (Chinese): one-line summary / key conclusions / per-speaker points / master term list / disagreements / action items |
 | [Speaker-labeled transcript (excerpt)](demo/1AKEmvYqbrOKL/dialog-excerpt.txt) | Intermediate artifact: raw audio → who-said-what (full transcript: 29,930 chars, 10 speakers) |
 
-> 119 minutes of audio → a distilled note in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
+<img src="demo/1AKEmvYqbrOKL/distilled.png" width="520" alt="share card example">
+
+> 119 minutes of audio → a distilled note plus a share card in 29.5 minutes (GPU transcription and CPU speaker separation run in parallel the whole way). Source Space ID: `1AKEmvYqbrOKL`. X replays expire after 30 days — the text artifacts are archived here; the audio stays in the local `out/`.
 
 ## Architecture
 

@@ -41,11 +41,12 @@ bash skills/yaya-xspace/run.sh "<url>" --no-crosscheck
 skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a               音频归档（默认保留——下载即归档）
 ├── distilled.md            ★ 最终干货（按说话人分组 + 关键名词总表）
+├── distilled.png           ★ 分享图（笔记自动渲染成一张可直接发推的图）
 ├── audio.labeled.json      ★ 结构化转写 {speaker, start, end, text}
 ├── audio.dialog.txt        ★ 带说话人的对话稿
 ├── audio.dialog.srt          带说话人的字幕
 ├── audio.txt / audio.srt     纯文本稿 / 无说话人字幕
-└── .audio.asr/               中间缓存（词级转写、分离结果、差异报告）
+└── .audio.asr/               中间缓存（词级转写、分离结果、差异报告、出图用的 HTML）
 ```
 
 音频**默认保留**：X 不存归档，30 天后回放永久消失——下载即归档，重跑也不用再下 81MB。确要省磁盘加 `--no-keep-audio`。换机器或重装 skill，这个目录都不受影响。
