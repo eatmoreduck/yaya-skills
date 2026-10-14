@@ -485,6 +485,9 @@ def main() -> int:
                     choices=["swiss", "editorial", "riso", "midnight", "hand"],
                     help="分享图风格（默认 swiss；可选 swiss/editorial/riso/midnight/hand）")
     ap.add_argument("--transcript-only", action="store_true", help="只转写不蒸馏")
+    ap.add_argument("--card-only", action="store_true",
+                    help="只出分享图：跳过下载/转写/蒸馏，对已有 distilled.md 直接重新出图"
+                         "（换 --style、重出高清图用）")
     args = ap.parse_args()
 
     ensure_deps_ready()
@@ -519,6 +522,21 @@ def main() -> int:
         log(f"输入: 本地音频 {Path(arg).name}")
     elif meta.get("title"):
         log(f"标题: {meta['title']} | 时长: {meta.get('duration')}s")
+
+    # 只出分享图：蒸馏已完成时免重跑流水线，直接对已有 distilled.md 出图。
+    # 输出 distilled.<style>.png——各风格并存、互相不覆盖，也不覆盖正式的 distilled.png
+    if args.card_only:
+        md = outdir / "distilled.md"
+        if not md.exists():
+            sys.exit(f"❌ {outdir} 下没有 distilled.md，先完整跑一遍蒸馏再出图")
+        # workdir 沿用完整流程的 .<stem>.asr 缓存目录（HTML 副本只进缓存，输出目录只留 PNG）
+        stems = [f.stem for f in outdir.glob("audio.*")
+                 if f.suffix in (VIDEO_EXT | AUDIO_EXT)]
+        import card
+        card.render(md, out_png=outdir / f"distilled.{args.style}.png",
+                    workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
+                    style=args.style)
+        return 0
 
     # 1) 取音频
     if local:

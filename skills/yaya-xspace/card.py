@@ -686,8 +686,10 @@ def capture(html_path: Path, out_png: Path, bg: str = "#FFFFFF") -> None:
     if not chrome:
         raise RuntimeError("未找到 Chrome/Chromium，无法出图")
 
+    # 2x 像素密度出图（2160px 宽）：X 上传会二次压缩，1x 原图到手就糊
     base = [chrome, "--headless", "--disable-gpu", "--hide-scrollbars",
-            f"--default-background-color={bg.lstrip('#')}FF", "--no-first-run"]
+            f"--default-background-color={bg.lstrip('#')}FF", "--no-first-run",
+            "--force-device-scale-factor=2"]
 
     # 第一遍：跑 JS 量内容高度（写进 <title>）
     p1 = subprocess.run(

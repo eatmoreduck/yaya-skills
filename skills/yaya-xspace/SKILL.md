@@ -41,6 +41,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 | `--no-keep-audio` | 跑完删除音频。**默认保留**（下载即归档，重跑不用再下） |
 | `--no-card` | 跳过分享图（distilled.png）。默认出图，依赖本机 Chrome，失败只警告不影响笔记 |
 | `--style S` | 分享图风格：`swiss` 国际风（**默认**，白底黑体红方块） / `editorial` 杂志风 / `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板。出图后日志会提醒可随时换 |
+| `--card-only` | 只出分享图：对已有 distilled.md 直接重新出图（换 `--style`、重出高清图），跳过下载/转写/蒸馏。**输出 `distilled.<风格>.png`**，各风格并存不覆盖，也不动正式的 `distilled.png`。src 仍传 Space 链接或 13 位 ID |
 | `--llm-model M` | 蒸馏模型，默认 `glm-5.3-flash` |
 | `--transcript-only` | 只转写，不蒸馏 |
 | `--no-crosscheck` | 跳过双参数交叉校验（省一半时间） |
