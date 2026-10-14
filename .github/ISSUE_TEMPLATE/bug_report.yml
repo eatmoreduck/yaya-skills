@@ -1,0 +1,49 @@
+name: "🐛 Bug 报告 / Bug Report"
+description: "转写错了、分离错了、蒸馏漏了、下载失败了——都算 / Transcription, diarization, distillation or download issues"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: "出问题的 skill / Affected skill"
+      options:
+        - "yaya-xspace（Space 链接 → 干货笔记 / link → distilled notes）"
+        - "yaya-xdl（Space 下载 / download）"
+        - "yaya-asr（转写 + 说话人分离 / transcribe + diarize）"
+        - "yaya-diarize（说话人时间线 / speaker timeline）"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: "发生了什么？期望是什么？ / What happened, and what did you expect?"
+      description: "现象讲清楚即可 / Describe the phenomenon, e.g. '11 speakers clustered into 12', 'an enumerated list got dropped from the notes'"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: "执行的命令与日志尾部 / Command run & tail of the log"
+      placeholder: |
+        bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/xxx" --speakers 12
+        (last ~20 lines of the log)
+    validations:
+      required: true
+  - type: input
+    id: space-id
+    attributes:
+      label: "Space 链接 / 音频时长 / Space URL or audio duration"
+      description: "时长很关键——长音频的过分割、缓存重算都和它有关 / Duration matters: over-splitting on long audio and cache recompute both depend on it"
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: "隐私确认 / Privacy"
+      options:
+        - label: "我没有粘贴私人 Space 的音频片段或转写原文 / I did NOT paste audio clips or transcript excerpts from a private Space (log/error output is enough)"
+          required: true
+  - type: checkboxes
+    id: repro
+    attributes:
+      label: "可复现性 / Reproducibility"
+      options:
+        - label: "重跑一次还能复现 / Reproduces on a re-run"

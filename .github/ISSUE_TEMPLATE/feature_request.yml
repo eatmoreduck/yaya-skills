@@ -1,0 +1,21 @@
+name: "💡 功能建议 / Feature Request"
+description: "想要新能力，或者现有行为不合理 / New capability, or existing behavior that feels wrong"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "你想解决什么问题？ / What problem are you trying to solve?"
+      description: "「用 yaya-xspace 蒸馏 XX 场景时，每次都要手动 YY」比「希望支持 YY」有用得多 / 'Every time I distill X I have to manually do Y' beats 'please add Y'"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "你期望的样子 / What you'd like to see"
+  - type: checkboxes
+    id: constraint
+    attributes:
+      label: "边界确认（AGENTS.md）/ Constraint check (AGENTS.md)"
+      options:
+        - label: "我知道「已知但刻意不做的」清单——我的建议不在其中（或在其中但我有新论据） / I've read the 'known but deliberately not done' list — my suggestion isn't in it (or I have new arguments)"
