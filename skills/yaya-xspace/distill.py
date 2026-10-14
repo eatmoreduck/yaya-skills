@@ -161,7 +161,10 @@ SYSTEM_PROMPT = """你是信息提纯器，服务对象是一个用 AI 做软件
 
 # 各说话人核心发言
 按说话人分组，每人一段：
-  **说话人 X（能推断出的身份/行业）**
+  **X / 名字（能推断出的身份/行业）**
+署名格式硬性要求：必须是「字母 / 名字」斜杠式（如 `**B / 魂蓝姐（…）**`）。
+禁止冒号式（`B：名字`）、禁止加「说话人」前缀、禁止两个字母并成一行（`G·小A`）——
+下游程序靠这个格式解析「字母→真名」映射，格式漂移会导致说话人改名失败。
   - 核心主张：…（用他的原话措辞，不是你的转述）
   - 关键名词/能力项：…（穷尽列出他提到的所有此类名词）
   - 案例/数字/工具：…
@@ -236,6 +239,13 @@ def llm_distill(labeled: str, model: str, title: str, roster: str) -> tuple[str,
             raise RuntimeError(f"LLM 请求失败: {p.stderr[:500]}")
         data = json.loads(p.stdout)
         if "error" in data:
+            code = str(data["error"].get("code", "")) if isinstance(data["error"], dict) else ""
+            if code == "1301":
+                raise RuntimeError(
+                    "LLM 报错: 智谱内容审核拦截（1301，题材敏感且同输入随机拦放）。"
+                    "转写产物完好，可选：①原样重跑（缓存命中，只花一次调用）"
+                    "②--llm-model 换智谱其他模型 ③改用本机其他 LLM CLI 重蒸馏"
+                    "（操作要点见 SKILL.md「蒸馏兜底」节）")
             raise RuntimeError(f"LLM 报错: {data['error']}")
         choice = data["choices"][0]
         content = (choice.get("message", {}).get("content") or "").strip()
@@ -299,6 +309,17 @@ def _strip_lead_name(rest: str, mval: str) -> str:
         if m:
             rest = rest[m.end():].strip()
     return re.sub(r"^[+/、，,]+\s*", "", rest).strip()
+
+
+def _normalize_speaker_headers(md: str) -> str:
+    """蒸馏文本落盘前，把 LLM 爱漂移的署名格式归一成 `**X / 名字`（观测过的漂移：
+      `**说话人 B / 名`、`**说话人 G·小A`、`**说话人 B：名`、`**B：名`）。
+    只碰行首 `**` 后紧跟字母的署名行，正文与金句引文不动；已合规的 `**B / 名` 幂等不变。
+    与 SYSTEM_PROMPT 的格式硬约束互为双保险（prompt 不听话时代码兜底）。"""
+    md = re.sub(r"^\*\*说话人\s*([A-Za-z])\s*[/：:·]\s*", r"**\1 / ", md, flags=re.M)
+    md = re.sub(r"^\*\*说话人\s*([A-Za-z])\s*(?=[（(])", r"**\1", md, flags=re.M)
+    md = re.sub(r"^\*\*([A-Za-z])\s*[：:]\s*", r"**\1 / ", md, flags=re.M)
+    return md
 
 
 def _md_header_rename(header: str, mapping: dict[str, str]) -> str:
@@ -520,6 +541,7 @@ def main() -> int:
     labeled = render(segs, with_time=True)
     distilled, truncated = llm_distill(labeled, args.llm_model,
                                        meta.get("title", ""), args.roster)
+    distilled = _normalize_speaker_headers(distilled)
 
     md = outdir / "distilled.md"
     n_spk = len({s["speaker"] for s in segs})
