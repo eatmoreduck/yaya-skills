@@ -488,7 +488,16 @@ def main() -> int:
     ap.add_argument("--card-only", action="store_true",
                     help="只出分享图：跳过下载/转写/蒸馏，对已有 distilled.md 直接重新出图"
                          "（换 --style、重出高清图用）")
+    ap.add_argument("--all-styles", action="store_true",
+                    help="配合 --card-only：五种风格一次全出（distilled.<风格>.png × 5），"
+                         "改稿/改错名后一键重出全部版本，杜绝图间新旧不一")
+    ap.add_argument("--rename", default="",
+                    help='错名勘误一条龙："旧名=新名"（多个用英文逗号分隔）。文本三件套'
+                         "（distilled.md / dialog.txt / dialog.srt）+ speaker_names.json "
+                         "一次改齐，然后五风格全重出图（配 --no-card 只改文本不出图）")
     args = ap.parse_args()
+    if args.all_styles and not args.card_only:
+        sys.exit("❌ --all-styles 仅配合 --card-only 使用（完整流程一次只出一版，正式产物固定叫 distilled.png）")
 
     ensure_deps_ready()
 
@@ -523,6 +532,78 @@ def main() -> int:
     elif meta.get("title"):
         log(f"标题: {meta['title']} | 时长: {meta.get('duration')}s")
 
+    # 错名勘误一条龙：名字写错了，稿和图必须一起改——只改一半（图没跟上）最坑人。
+    # 文本三件套 + speaker_names.json 一处改、全同步，然后五风格全重出（AGENTS.md 硬约束 9 的对外产物口径）。
+    if args.rename:
+        if args.card_only:
+            sys.exit("❌ --rename 已包含全风格重出图，不必再给 --card-only（只想改文本加 --no-card）")
+        md = outdir / "distilled.md"
+        if not md.exists():
+            sys.exit(f"❌ {outdir} 下没有 distilled.md，无可勘误")
+        pairs: dict[str, str] = {}
+        for part in args.rename.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if "=" not in part:
+                sys.exit(f"❌ --rename 格式：旧名=新名，多个用英文逗号分隔（收到：{part}）")
+            old, new = (s.strip() for s in part.split("=", 1))
+            if len(old) < 2:
+                sys.exit(f"❌ 旧名至少 2 个字（收到：{old!r}）——单字母替换会误伤正文与英文词，不支持")
+            if not new:
+                sys.exit(f"❌ 新名不能为空（{old}=？）")
+            if old == new:
+                log(f"跳过：{old} 新旧同名")
+                continue
+            pairs[old] = new
+        if not pairs:
+            sys.exit("❌ --rename 没解析出任何有效替换")
+        for name in ("distilled.md", "audio.dialog.txt", "audio.dialog.srt"):
+            p = outdir / name
+            if not p.exists():
+                log(f"⚠️ 跳过不存在的 {name}")
+                continue
+            text = p.read_text(encoding="utf-8")
+            new_text = text
+            for old, new in pairs.items():
+                new_text = new_text.replace(old, new)
+            if new_text != text:
+                p.write_text(new_text, encoding="utf-8")
+                log(f"勘误: {name}")
+            else:
+                log(f"⚠️ 未变: {name}（没出现旧名？确认拼写）")
+        # speaker_names.json 的映射值同步（值可能是复合名：情感求/程序员、Ringo + 旺仔）
+        names_json = outdir / "speaker_names.json"
+        if names_json.exists():
+            try:
+                data = json.loads(names_json.read_text(encoding="utf-8"))
+                mapping = data.get("mapping") or {}
+                touched = False
+                for k, v in mapping.items():
+                    nv = v
+                    for old, new in pairs.items():
+                        nv = nv.replace(old, new)
+                    if nv != v:
+                        mapping[k] = nv
+                        touched = True
+                if touched:
+                    data["mapping"] = mapping
+                    names_json.write_text(
+                        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                        encoding="utf-8")
+                    log("勘误: speaker_names.json")
+            except (OSError, json.JSONDecodeError) as e:
+                log(f"⚠️ speaker_names.json 同步失败（不影响文本勘误）：{e}")
+        if not args.no_card:
+            stems = [f.stem for f in outdir.glob("audio.*")
+                     if f.suffix in (VIDEO_EXT | AUDIO_EXT)]
+            import card
+            for st in card.STYLES:
+                card.render(md, out_png=outdir / f"distilled.{st}.png",
+                            workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
+                            style=st)
+        return 0
+
     # 只出分享图：蒸馏已完成时免重跑流水线，直接对已有 distilled.md 出图。
     # 输出 distilled.<style>.png——各风格并存、互相不覆盖，也不覆盖正式的 distilled.png
     if args.card_only:
@@ -533,9 +614,11 @@ def main() -> int:
         stems = [f.stem for f in outdir.glob("audio.*")
                  if f.suffix in (VIDEO_EXT | AUDIO_EXT)]
         import card
-        card.render(md, out_png=outdir / f"distilled.{args.style}.png",
-                    workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
-                    style=args.style)
+        styles = list(card.STYLES) if args.all_styles else [args.style]
+        for st in styles:
+            card.render(md, out_png=outdir / f"distilled.{st}.png",
+                        workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
+                        style=st)
         return 0
 
     # 1) 取音频
