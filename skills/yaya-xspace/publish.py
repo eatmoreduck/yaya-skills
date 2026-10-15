@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -33,7 +34,8 @@ import page    # 同目录：收听页生成（audio_url 参数化）
 
 SKILL_DIR = Path(__file__).resolve().parent
 OUT_ROOT = SKILL_DIR / "out"
-PUB_ROOT = OUT_ROOT / ".publish"      # 发布工位：site 本地镜像 + 缓存（out/ 已 gitignore）
+PUB_ROOT = OUT_ROOT / ".publish"      # 发布工位：manifest 源数据 + site 本地镜像（out/ 已 gitignore）
+MANIFEST = PUB_ROOT / "manifest.json"  # 源数据（持久）；site/ 是派生物，每次发布全量重建
 SITE_DIR = PUB_ROOT / "site"
 
 R2_BUCKET = "yaya-audio"
@@ -140,10 +142,12 @@ def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
         except (OSError, json.JSONDecodeError, KeyError, ValueError):
             pass
     sid = meta.get("id") or outdir.name
+    # URL 即结构：/<type>/<id>/（Pages 尾斜杠自动出 index.html，无需 .html 后缀）
+    path = f"{ctype}/{sid}"
     # write=False：只取 HTML 内容组装线上页，别把占位音频地址写进本地收听页
     page_html = page.build(outdir, audio_url=audio_url, write=False)
     summary = dist.get("summary") or ""
-    return {"id": sid, "type": ctype, "lang": "zh",
+    return {"id": sid, "type": ctype, "lang": "zh", "path": path,
             "title": dist.get("title") or meta.get("title") or sid,
             "summary": summary[:120], "url": meta.get("url") or "",
             "n_spk": dist.get("n_spk") or "", "duration_sec": duration_sec,
@@ -171,7 +175,7 @@ def _index_html(entries: list[dict]) -> str:
             meta_bits.append(f'{e(str(it["n_spk"]))} speakers')
         if it.get("chars"):
             meta_bits.append(f'{int(it["chars"]):,} 字')
-        cards += (f'<a class="card" data-type="{e(t)}" href="s/{e(it["id"])}/">'
+        cards += (f'<a class="card" data-type="{e(t)}" href="{e(it["path"])}/">'
                   f'<div class="row1"><h3>{e(it["title"])}</h3>'
                   f'<span class="badge">{e(label)}</span></div>'
                   f'<div class="meta"><span class="dt"></span>{" · ".join(meta_bits)}</div>'
@@ -269,19 +273,26 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
         wrangler("r2", "object", "put", f"{R2_BUCKET}/{audio_key}",
                  f"--file={audio}", "--remote", timeout=1800)
 
-    # ④ 组装站点：manifest upsert（v2：version+entries；旧数组格式兼容读）→ 单场页 → 索引页
+    # ④ 组装站点：manifest upsert（v2，源数据在 site 外持久）→ site 全量重建 → 索引页
     log("④ 组装站点与索引页…")
-    man_path = SITE_DIR / "manifest.json"
+    PUB_ROOT.mkdir(parents=True, exist_ok=True)
     try:
-        data = json.loads(man_path.read_text(encoding="utf-8"))
+        data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         data = []
     entries = data.get("entries") if isinstance(data, dict) else data
     entries = [m for m in (entries or []) if m.get("id") != entry["id"]]
     entries.append({k: v for k, v in entry.items() if k != "page_html"})
-    man_path.write_text(json.dumps({"version": 2, "entries": entries},
+    MANIFEST.write_text(json.dumps({"version": 2, "entries": entries},
                                    ensure_ascii=False, indent=1), encoding="utf-8")
-    d = SITE_DIR / "s" / entry["id"]
+    # site/ 是纯派生物：整体重建，旧结构/旧场次残留不会跟着部署上去
+    if SITE_DIR.exists():
+        shutil.rmtree(SITE_DIR)
+    SITE_DIR.mkdir(parents=True, exist_ok=True)
+    (SITE_DIR / "manifest.json").write_text(
+        json.dumps({"version": 2, "entries": entries}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
+    d = SITE_DIR / entry["path"]
     d.mkdir(parents=True, exist_ok=True)
     (d / "index.html").write_text(entry["page_html"], encoding="utf-8")
     (SITE_DIR / "index.html").write_text(_index_html(entries), encoding="utf-8")
@@ -295,7 +306,7 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
              "--production-branch=main", check=False)  # 已存在不算错
     wrangler("pages", "deploy", str(SITE_DIR), f"--project-name={PAGES_PROJECT}")
 
-    listen = f"{PAGES_BASE}/s/{entry['id']}/"
+    listen = f"{PAGES_BASE}/{entry['path']}/"
     log("=" * 60)
     log(f"🎉 已发布：{listen}")
     log(f"📚 资产库：{PAGES_BASE}")
