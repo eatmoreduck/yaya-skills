@@ -497,6 +497,11 @@ def main() -> int:
                     help='错名勘误一条龙："旧名=新名"（多个用英文逗号分隔）。文本三件套'
                          "（distilled.md / dialog.txt / dialog.srt）+ speaker_names.json "
                          "一次改齐，然后五风格全重出图（配 --no-card 只改文本不出图）")
+    ap.add_argument("--publish", action="store_true",
+                    help="把这一场发布到线上资产库：音频进 R2、收听页+索引页进 Cloudflare Pages。"
+                         "仅用于公开场（发布即声明内容可公开）；需 wrangler 登录（npx wrangler login）")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="配合 --publish：只在本地组装站点不实际上传")
     args = ap.parse_args()
     if args.all_styles and not args.card_only:
         sys.exit("❌ --all-styles 仅配合 --card-only 使用（完整流程一次只出一版，正式产物固定叫 distilled.png）")
@@ -533,6 +538,12 @@ def main() -> int:
         log(f"输入: 本地音频 {Path(arg).name}")
     elif meta.get("title"):
         log(f"标题: {meta['title']} | 时长: {meta.get('duration')}s")
+
+    # 发布到线上资产库（默认绝不发布——out/ 里有私人场，显式 --publish 才上传）
+    if args.publish:
+        import publish
+        publish.publish(outdir, dry_run=args.dry_run)
+        return 0
 
     # 错名勘误一条龙：名字写错了，稿和图必须一起改——只改一半（图没跟上）最坑人。
     # 文本三件套 + speaker_names.json 一处改、全同步，然后五风格全重出（AGENTS.md 硬约束 9 的对外产物口径）。

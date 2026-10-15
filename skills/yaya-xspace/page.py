@@ -188,7 +188,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opaci
   <input id="prog" type="range" min="0" max="1000" value="0" step="1" aria-label="进度">
   <button id="rate" aria-label="倍速">1.0×</button>
 </div>
-<audio id="au" src="audio.m4a" preload="metadata"></audio>
+<audio id="au" src="[[AUDIOSRC]]" preload="metadata"></audio>
 
 <header>
   <div class="kicker">X SPACE · 收听页</div>
@@ -311,8 +311,11 @@ function tick(t){
 </script></body></html>"""
 
 
-def build(outdir: Path) -> Path:
-    """outdir（含 audio.m4a / audio.labeled.json / distilled.md …）→ distilled.html"""
+def build(outdir: Path, audio_url: str = "audio.m4a") -> Path:
+    """outdir（含 audio.m4a / audio.labeled.json / distilled.md …）→ distilled.html
+
+    audio_url：音频地址。默认同目录相对路径（本地 file:// 直接播）；
+    上云时传完整 URL（如 https://<worker>.workers.dev/audio/<id>.m4a）。"""
     d = _load(outdir)
     segs, names, meta, dist = d["segs"], d["names"], d["meta"], d["distill"]
     speakers = _speaker_meta(segs, names)
@@ -341,6 +344,7 @@ def build(outdir: Path) -> Path:
                 .replace("[[DISTILL]]", dist_html)
                 .replace("[[ID]]", card.esc(meta.get("id") or outdir.name))
                 .replace("[[DATA]]", data)
+                .replace("[[AUDIOSRC]]", card.esc(audio_url))
                 .replace("[[BG]]", BG).replace("[[RED]]", RED))
     out = outdir / "distilled.html"
     out.write_text(html_out, encoding="utf-8")
