@@ -481,6 +481,8 @@ def main() -> int:
                     help="跑完删除音频。默认保留——下载即归档，重跑不用再下 81MB")
     ap.add_argument("--no-card", action="store_true",
                     help="跳过生成分享图（distilled.png）；默认生成，失败只警告不影响笔记")
+    ap.add_argument("--no-page", action="store_true",
+                    help="跳过生成收听页（distilled.html，点哪段听哪段）；默认生成")
     ap.add_argument("--style", default="swiss",
                     choices=["swiss", "editorial", "riso", "midnight", "hand"],
                     help="分享图风格（默认 swiss；可选 swiss/editorial/riso/midnight/hand）")
@@ -602,6 +604,9 @@ def main() -> int:
                 card.render(md, out_png=outdir / f"distilled.{st}.png",
                             workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
                             style=st)
+        if not args.no_page:
+            import page
+            page.build(outdir)
         return 0
 
     # 只出分享图：蒸馏已完成时免重跑流水线，直接对已有 distilled.md 出图。
@@ -619,6 +624,9 @@ def main() -> int:
             card.render(md, out_png=outdir / f"distilled.{st}.png",
                         workdir=outdir / f".{stems[0] if stems else 'audio'}.asr",
                         style=st)
+        if not args.no_page:
+            import page
+            page.build(outdir)
         return 0
 
     # 1) 取音频
@@ -675,6 +683,14 @@ def main() -> int:
                 f"swiss / editorial / riso / midnight / hand）")
         except Exception as e:
             log(f"⚠️ 分享图生成失败（不影响笔记）：{e}")
+
+    # 5) 网页化：蒸馏稿 + 逐字稿 + 原声 → 可交互收听页（点哪段听哪段）
+    if not args.no_page:
+        try:
+            import page
+            page.build(outdir)
+        except Exception as e:
+            log(f"⚠️ 收听页生成失败（不影响笔记）：{e}")
 
     if args.no_keep_audio and not local:
         # 只删音频容器（后缀过滤，见 AGENTS.md 硬约束）；

@@ -105,6 +105,7 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 skills/yaya-xspace/out/<space-id>/   ← 一场 Space 一个目录，一切都在里面
 ├── audio.m4a                        音频归档（默认保留——下载即归档）
 ├── distilled.md                     ★ 干货笔记
+├── distilled.html                   ★ 收听页：蒸馏栏 + 逐字稿时间流，点哪段听哪段
 ├── audio.labeled.json / audio.dialog.txt / …   转写产物
 └── .audio.asr/                      中间缓存（删掉只损失重算时间）
 ```

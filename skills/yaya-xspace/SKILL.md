@@ -40,6 +40,7 @@ bash {baseDir}/run.sh "/path/to/space.m4a" --speakers 12
 | `--speakers N` | 推荐显式给**实际活跃说话人数**（强制聚类类数，不是上限：11 人场给 12；人少的录音务必给真实人数）。`-1` 自动聚类在长音频上易过分割 |
 | `--no-keep-audio` | 跑完删除音频。**默认保留**（下载即归档，重跑不用再下） |
 | `--no-card` | 跳过分享图（distilled.png）。默认出图，依赖本机 Chrome，失败只警告不影响笔记 |
+| `--no-page` | 跳过收听页（distilled.html）。默认生成（蒸馏/重出图/勘误后都会刷新），失败只警告 |
 | `--style S` | 分享图风格：`swiss` 国际风（**默认**，白底黑体红方块） / `editorial` 杂志风 / `riso` 丝印潮风 / `midnight` 夜读 / `hand` 手绘白板。出图后日志会提醒可随时换 |
 | `--card-only` | 只出分享图：对已有 distilled.md 直接重新出图（换 `--style`、重出高清图），跳过下载/转写/蒸馏。**输出 `distilled.<风格>.png`**，各风格并存不覆盖，也不动正式的 `distilled.png`。src 仍传 Space 链接或 13 位 ID |
 | `--all-styles` | 配合 `--card-only`：五种风格一次全出。**改稿/改错名后必用这个**——五张图同源于一份 distilled.md（图不存字，每次现渲），一键全重出杜绝图间新旧不一 |
@@ -57,6 +58,7 @@ skills/yaya-xspace/out/<space-id>/
 ├── audio.m4a                 音频归档（下载即归档；--no-keep-audio 才删）
 ├── distilled.md              ★ 最终干货（按说话人分组 + 关键名词总表）
 ├── distilled.png             ★ 分享图（笔记自动渲染成一张可直接发推的图）
+├── distilled.html            ★ 收听页（蒸馏栏 + 逐字稿时间流，点哪段听哪段；配同目录 audio.m4a）
 ├── <audio>.labeled.json      ★ 结构化转写（机器接口，说话人=字母）
 ├── <audio>.dialog.txt        ★ 带说话人的对话稿（真名：文本）
 ├── <audio>.dialog.srt          带说话人的字幕（[真名]）
