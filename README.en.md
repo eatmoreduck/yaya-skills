@@ -10,7 +10,7 @@ English | [简体中文](README.md)
 ![Platform](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)
 ![Local](https://img.shields.io/badge/audio-never%20leaves%20your%20machine-success)
 
-> **Wave 1: turn X Space audio into text.** Built for people who don't have time to listen — or forgot to. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim — **plus a ready-to-post share card**.
+> **Wave 1: turn X Space audio into text.** You catch something great while driving or cooking and want to note it down — but your hands are busy. By the time you're free, all that's left is a vague impression, and the replay gets deleted after 30 days anyway. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim — **plus a ready-to-post share card**.
 
 **yaya-skills is a toolset that helps writers work faster.** Wave 1 is a **distiller for X Spaces** ([yaya-xspace](skills/yaya-xspace/)): it turns Spaces you had no time to listen to into ready-to-use notes, backed by three atomic skills for download / transcription / speaker separation. More tools for writers will follow. Audio never leaves your machine.
 
@@ -62,7 +62,7 @@ The payoff of this split is straightforward: only want the audio archived? Use `
 
 ## Why this exists
 
-**Good content has to be saved before it can be processed.** X offers no archive or search for Spaces, and replays are deleted after 30 days — **download is archiving**, otherwise that audio is gone forever.
+**Good content has to be saved before it can be processed.** X offers no archive or search for Spaces, and replays are deleted after 30 days — **download is archiving**, otherwise that audio is gone forever. What you save no longer evaporates with a platform's policies: note by note, it compounds into a content library of your own — cite it any time, replay it any time.
 
 Running locally also means: free, zero logins, no cloud accounts.
 
@@ -84,8 +84,9 @@ Running locally also means: free, zero logins, no cloud accounts.
 
 ## Roadmap
 
-- ✅ **Wave 1**: X Space → notes (the pipeline above)
-- 🔜 **Next**: more tools that help writers work faster
+- ✅ **Wave 1**: X Space → notes + share card (the pipeline above)
+- 🔜 **Next**: web-first outputs & self-hosted archiving — each Space becomes an interactive page (click a segment, hear that moment), audio lands in your own storage; the 30-day replay expiry is no longer the end
+- 🔜 **Later**: more tools for writers (transcription/separation are atomic — podcasts, videos, or voice memos from any source can enter the same pipeline)
 
 ## Models (auto-downloaded on first run, nothing to prepare)
 
