@@ -500,6 +500,10 @@ def main() -> int:
     ap.add_argument("--publish", action="store_true",
                     help="把这一场发布到线上资产库：音频进 R2、收听页+索引页进 Cloudflare Pages。"
                          "仅用于公开场（发布即声明内容可公开）；需 wrangler 登录（npx wrangler login）")
+    ap.add_argument("--type", default="auto",
+                    choices=["auto", "space", "interview", "youtube", "audio"],
+                    help="资产库类型标记（配 --publish）：auto 按 URL 推断，"
+                         "其他来源发布时显式指定（如 YouTube 拆解 --type youtube）")
     ap.add_argument("--dry-run", action="store_true",
                     help="配合 --publish：只在本地组装站点不实际上传")
     args = ap.parse_args()
@@ -542,7 +546,7 @@ def main() -> int:
     # 发布到线上资产库（默认绝不发布——out/ 里有私人场，显式 --publish 才上传）
     if args.publish:
         import publish
-        publish.publish(outdir, dry_run=args.dry_run)
+        publish.publish(outdir, dry_run=args.dry_run, ctype=args.type)
         return 0
 
     # 错名勘误一条龙：名字写错了，稿和图必须一起改——只改一半（图没跟上）最坑人。

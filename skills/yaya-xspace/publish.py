@@ -116,34 +116,69 @@ def _ensure_worker() -> str:
     return m.group(0).rstrip("/")
 
 
-def _entry(outdir: Path, audio_url: str) -> dict:
-    """单场 manifest 条目 + 生成收听页 HTML。"""
+def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
+    """单场 manifest 条目（资产库的"表结构"）+ 生成收听页 HTML。
+
+    type 是来源类型位：space / interview / youtube / audio——
+    现在只有 Space，字段先立好，以后 YouTube 拆解、视频访谈直接归档不迁移。"""
     meta = {}
     mj = outdir / "meta.json"
     if mj.exists():
         meta = json.loads(mj.read_text(encoding="utf-8"))
     dist = card.parse_distilled((outdir / "distilled.md").read_text(encoding="utf-8"))
+    if ctype == "auto":
+        u = meta.get("url") or ""
+        ctype = "space" if ("x.com/i/spaces" in u or "twitter.com/i/spaces" in u) else "audio"
+    duration_sec, chars = 0, 0
+    lj = outdir / "audio.labeled.json"
+    if lj.exists():
+        try:
+            segs = json.loads(lj.read_text(encoding="utf-8")).get("segments") or []
+            if segs:
+                duration_sec = int(float(segs[-1]["end"]))
+                chars = sum(len(s.get("text") or "") for s in segs)
+        except (OSError, json.JSONDecodeError, KeyError, ValueError):
+            pass
     sid = meta.get("id") or outdir.name
-    page_html = page.build(outdir, audio_url=audio_url).read_text(encoding="utf-8")
+    # write=False：只取 HTML 内容组装线上页，别把占位音频地址写进本地收听页
+    page_html = page.build(outdir, audio_url=audio_url, write=False)
     summary = dist.get("summary") or ""
-    return {"id": sid, "title": dist.get("title") or meta.get("title") or sid,
+    return {"id": sid, "type": ctype, "lang": "zh",
+            "title": dist.get("title") or meta.get("title") or sid,
             "summary": summary[:120], "url": meta.get("url") or "",
-            "n_spk": dist.get("n_spk") or "", "published_at": time.strftime("%Y-%m-%d"),
+            "n_spk": dist.get("n_spk") or "", "duration_sec": duration_sec,
+            "chars": chars, "published_at": time.strftime("%Y-%m-%d"),
             "page_html": page_html}
+
+
+TYPE_LABEL = {"space": "SPACE", "interview": "INTERVIEW", "youtube": "YOUTUBE", "audio": "AUDIO"}
 
 
 def _index_html(entries: list[dict]) -> str:
     e = card.esc
+    def _fmt_dur(sec: int) -> str:
+        h, rem = divmod(sec, 3600)
+        return f"{h}h{rem // 60:02d}m" if h else f"{sec // 60}min"
     cards = ""
     for it in sorted(entries, key=lambda x: x.get("published_at", ""), reverse=True):
+        t = it.get("type") or "audio"
+        label = TYPE_LABEL.get(t, t.upper())
         summary = f'<p class="sum">{e(it["summary"])}</p>' if it.get("summary") else ""
-        cards += (f'<a class="card" href="s/{e(it["id"])}/">'
-                  f'<h3>{e(it["title"])}</h3>'
-                  f'<div class="meta"><span class="dt"></span>{e(it["published_at"])}'
-                  f' · {e(str(it.get("n_spk") or ""))} 位说话人</div>{summary}</a>')
+        meta_bits = [e(it["published_at"])]
+        if it.get("duration_sec"):
+            meta_bits.append(_fmt_dur(int(it["duration_sec"])))
+        if it.get("n_spk"):
+            meta_bits.append(f'{e(str(it["n_spk"]))} speakers')
+        if it.get("chars"):
+            meta_bits.append(f'{int(it["chars"]):,} 字')
+        cards += (f'<a class="card" data-type="{e(t)}" href="s/{e(it["id"])}/">'
+                  f'<div class="row1"><h3>{e(it["title"])}</h3>'
+                  f'<span class="badge">{e(label)}</span></div>'
+                  f'<div class="meta"><span class="dt"></span>{" · ".join(meta_bits)}</div>'
+                  f'{summary}</a>')
     return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>yaya · Space 资产库</title>
+<title>yaya · audio assets</title>
 <style>
 :root{{--bg:#F1F0EC;--ink:#101010;--red:#E02B20}}
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -153,25 +188,54 @@ body{{background:var(--bg);color:var(--ink);font-family:-apple-system,'PingFang 
  border-bottom:2px solid var(--ink);padding-bottom:14px}}
 .top h1{{font-size:26px;font-weight:900;letter-spacing:2px}}
 .top a{{color:var(--red);font-size:13px;text-decoration:none}}
-.note{{font-size:13px;opacity:.6;margin:16px 0 26px}}
+#filters{{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}}
+#filters .f{{border:1.5px solid var(--ink);background:transparent;border-radius:999px;
+ padding:3px 14px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px}}
+#filters .f.on{{background:var(--ink);color:#fff}}
+.note{{font-size:13px;opacity:.6;margin:8px 0 24px}}
 .card{{display:block;background:#FBFAF7;border:1.5px solid var(--ink);
  padding:18px 22px;margin-bottom:16px;text-decoration:none;color:inherit;
  box-shadow:5px 5px 0 rgba(16,16,16,.12);transition:transform .08s}}
 .card:hover{{transform:translate(-2px,-2px)}}
+.card[hidden]{{display:none}}
+.row1{{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}}
 .card h3{{font-size:18px;font-weight:800;line-height:1.5}}
-.card .meta{{font-size:12.5px;opacity:.65;margin-top:6px;display:flex;align-items:center;gap:6px}}
+.badge{{flex:none;border:1.5px solid var(--ink);border-radius:4px;padding:1px 8px;
+ font-size:10.5px;font-weight:800;letter-spacing:1.5px}}
+.card .meta{{font-size:12.5px;opacity:.65;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}}
 .card .dt{{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}}
 .card .sum{{font-size:14px;opacity:.8;margin-top:8px;line-height:1.7}}
 .foot{{margin-top:30px;font-size:12.5px;opacity:.55}}
 </style></head><body><div class="wrap">
-<div class="top"><h1>YAYA · SPACE 资产库</h1><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">yaya-skills ↗</a></div>
-<p class="note">公开 Space 的文字沉淀与原声存档——X 回放 30 天删除，这里长期在。点卡片收听。</p>
+<div class="top"><h1>YAYA · AUDIO ASSETS</h1><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">yaya-skills ↗</a></div>
+<div id="filters"></div>
+<p class="note">语音内容的文字沉淀与原声存档——平台回放会过期，这里长期在。点卡片收听，点哪段听哪段。</p>
 {cards}
 <p class="foot">由 yaya-skills 本地蒸馏生成 · 托管于 Cloudflare</p>
-</div></body></html>"""
+</div>
+<script>
+const cards = [...document.querySelectorAll('.card')];
+const types = [...new Set(cards.map(c => c.dataset.type))];
+const box = document.getElementById('filters');
+let active = null;
+function chip(label, val) {{
+  const b = document.createElement('button');
+  b.className = 'f'; b.textContent = label;
+  b.onclick = () => {{
+    active = (active === val) ? null : val;
+    box.querySelectorAll('.f').forEach(x => x.classList.remove('on'));
+    if (active) b.classList.add('on');
+    cards.forEach(c => c.hidden = !!(active && c.dataset.type !== active));
+  }};
+  box.appendChild(b);
+  return b;
+}}
+chip('全部', null);
+types.forEach(t => chip(t.toUpperCase(), t));
+</script></body></html>"""
 
 
-def publish(outdir: Path, dry_run: bool = False) -> dict:
+def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
     """发布单场：音频→R2，收听页+列表→Pages。返回 {listen_url, site_url}。"""
     outdir = outdir.resolve()
     md, audio = outdir / "distilled.md", outdir / "audio.m4a"
@@ -181,38 +245,46 @@ def publish(outdir: Path, dry_run: bool = False) -> dict:
         sys.exit(f"❌ {outdir} 下没有 audio.m4a（音频被删的场发不了，回放还在就重跑一遍下载）")
     SITE_DIR.mkdir(parents=True, exist_ok=True)
 
-    log("① 准备 R2 桶与 Range 代理 Worker…")
-    worker_base = _ensure_worker()
     sid_full = (outdir / "meta.json")
     sid = "space"
     if sid_full.exists():
         sid = json.loads(sid_full.read_text(encoding="utf-8")).get("id") or outdir.name
     audio_key = f"audio/{sid}.m4a"
+
+    if dry_run:
+        # 离线组装：不碰 Cloudflare，Worker 域名用占位（只看站点结构与页面效果）
+        worker_base = f"https://{WORKER_NAME}.example.workers.dev"
+        log(f"① dry-run：跳过 R2/Worker，音频地址用占位 {worker_base}")
+    else:
+        log("① 准备 R2 桶与 Range 代理 Worker…")
+        worker_base = _ensure_worker()
+        log(f"   Worker: {worker_base}")
     audio_url = f"{worker_base}/{audio_key}"
-    log(f"   Worker: {worker_base}")
 
     log("② 生成线上版收听页…")
-    entry = _entry(outdir, audio_url)
+    entry = _entry(outdir, audio_url, ctype=ctype)
 
     if not dry_run:
         log(f"③ 上传音频到 R2（{audio.stat().st_size/1e6:.0f}MB，几分钟看带宽）…")
         wrangler("r2", "object", "put", f"{R2_BUCKET}/{audio_key}",
                  f"--file={audio}", "--remote", timeout=1800)
 
-    # ④ 组装站点：manifest upsert → 单场页 → 索引页
+    # ④ 组装站点：manifest upsert（v2：version+entries；旧数组格式兼容读）→ 单场页 → 索引页
     log("④ 组装站点与索引页…")
     man_path = SITE_DIR / "manifest.json"
     try:
-        manifest = json.loads(man_path.read_text(encoding="utf-8"))
+        data = json.loads(man_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        manifest = []
-    manifest = [m for m in manifest if m.get("id") != entry["id"]]
-    manifest.append({k: v for k, v in entry.items() if k != "page_html"})
-    man_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
+        data = []
+    entries = data.get("entries") if isinstance(data, dict) else data
+    entries = [m for m in (entries or []) if m.get("id") != entry["id"]]
+    entries.append({k: v for k, v in entry.items() if k != "page_html"})
+    man_path.write_text(json.dumps({"version": 2, "entries": entries},
+                                   ensure_ascii=False, indent=1), encoding="utf-8")
     d = SITE_DIR / "s" / entry["id"]
     d.mkdir(parents=True, exist_ok=True)
     (d / "index.html").write_text(entry["page_html"], encoding="utf-8")
-    (SITE_DIR / "index.html").write_text(_index_html(manifest), encoding="utf-8")
+    (SITE_DIR / "index.html").write_text(_index_html(entries), encoding="utf-8")
 
     if dry_run:
         log("✔ dry-run 完成：站点已组装在 " + str(SITE_DIR) + "，未上传")
@@ -232,10 +304,15 @@ def publish(outdir: Path, dry_run: bool = False) -> dict:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        sys.exit("用法: python3 publish.py <outdir> [--dry-run]")
-    publish(Path(sys.argv[1]).expanduser().resolve(),
-            dry_run="--dry-run" in sys.argv)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if not args:
+        sys.exit("用法: python3 publish.py <outdir> [--dry-run] [--type space|interview|youtube|audio]")
+    ctype = "auto"
+    if "--type" in sys.argv:
+        i = sys.argv.index("--type")
+        ctype = sys.argv[i + 1] if i + 1 < len(sys.argv) else "auto"
+    publish(Path(args[0]).expanduser().resolve(),
+            dry_run="--dry-run" in sys.argv, ctype=ctype)
     return 0
 
 

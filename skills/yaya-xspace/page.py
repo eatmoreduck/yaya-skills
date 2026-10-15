@@ -311,11 +311,13 @@ function tick(t){
 </script></body></html>"""
 
 
-def build(outdir: Path, audio_url: str = "audio.m4a") -> Path:
+def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True):
     """outdir（含 audio.m4a / audio.labeled.json / distilled.md …）→ distilled.html
 
     audio_url：音频地址。默认同目录相对路径（本地 file:// 直接播）；
-    上云时传完整 URL（如 https://<worker>.workers.dev/audio/<id>.m4a）。"""
+    上云时传完整 URL（如 https://<worker>.workers.dev/audio/<id>.m4a）。
+    write=False 只返回 HTML 内容不落盘（publish 组装线上页用，
+    免得占位域名覆盖本地收听页）。"""
     d = _load(outdir)
     segs, names, meta, dist = d["segs"], d["names"], d["meta"], d["distill"]
     speakers = _speaker_meta(segs, names)
@@ -347,6 +349,8 @@ def build(outdir: Path, audio_url: str = "audio.m4a") -> Path:
                 .replace("[[AUDIOSRC]]", card.esc(audio_url))
                 .replace("[[BG]]", BG).replace("[[RED]]", RED))
     out = outdir / "distilled.html"
+    if not write:
+        return html_out
     out.write_text(html_out, encoding="utf-8")
     log(f"收听页已生成 {out.name}（{out.stat().st_size/1e3:.0f}KB，配同目录 audio.m4a 播放）")
     return out
