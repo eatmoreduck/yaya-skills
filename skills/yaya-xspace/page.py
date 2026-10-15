@@ -25,8 +25,9 @@ from pathlib import Path
 import card  # 同目录模块：复用 parse_distilled / esc
 
 SKILL_DIR = Path(__file__).resolve().parent
-RED = "#E02B20"       # swiss 品牌红
-BG = "#F1F0EC"
+# 视觉语言与主站 eatmoreduck.com 对齐：纯白底、马克笔黄强调、衬线大标题
+ACCENT = "#FFD23F"
+BG = "#FFFFFF"
 # 说话人色点轮转（克制、和谐、白底可辨）
 DOTS = ("#E02B20", "#1F5FA8", "#1E7A46", "#B0680A", "#7A3E9D",
         "#0F7B8A", "#A8385A", "#5B5BD6", "#4E6E00", "#8A5A2B")
@@ -113,29 +114,36 @@ def _distill_html(d: dict) -> str:
 
 _TMPL = """<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>[[TITLE]] · yaya 收听页</title>
+<title>[[TITLE]] · eatmoreduck 收听页</title>
 <style>
-:root{--bg:[[BG]];--ink:#101010;--red:[[RED]];--line:#101010;--card:#FBFAF7}
+:root{--bg:[[BG]];--ink:#111111;--accent:[[ACCENT]];--line:#111111;--card:#FFFFFF}
 *{margin:0;padding:0;box-sizing:border-box}
 html{background:var(--bg)}
-body{font-family:-apple-system,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
  color:var(--ink);line-height:1.7}
 /* ── 吸顶播放条 ── */
 #bar{position:sticky;top:0;z-index:9;background:var(--bg);
- border-bottom:2px solid var(--line);padding:10px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+ border-bottom:1.5px solid var(--line);padding:10px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 #bar .btn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);
- background:var(--red);color:#fff;font-size:18px;cursor:pointer}
+ background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
 #bar .btn:active{transform:scale(.94)}
-#prog{flex:1 1 200px;accent-color:var(--red);height:6px;cursor:pointer}
-#tm{font-variant-numeric:tabular-nums;font-size:13px;opacity:.75;white-space:nowrap}
-#rate{border:1.5px solid var(--line);background:transparent;border-radius:14px;
- padding:3px 12px;font-size:13px;font-weight:700;cursor:pointer}
+#prog{flex:1 1 200px;accent-color:var(--ink);height:6px;cursor:pointer}
+#tm{font-variant-numeric:tabular-nums;font-size:13px;opacity:.75;white-space:nowrap;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
+#rate{border:1.5px solid var(--line);background:#fff;border-radius:0;
+ padding:3px 12px;font-size:13px;font-weight:700;cursor:pointer;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
+#rate:hover{background:var(--accent)}
 /* ── 头部 ── */
 header{padding:34px 22px 10px;max-width:1200px;margin:0 auto}
-header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6}
-header h1{font-size:clamp(24px,4vw,40px);line-height:1.3;font-weight:900;margin:8px 0 12px}
-header .src a{color:var(--red);font-size:14px;text-decoration:none}
-.stats{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;opacity:.72;margin-top:10px}
+header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
+header h1{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
+ font-size:clamp(24px,4vw,40px);line-height:1.35;font-weight:900;margin:8px 0 12px}
+header .src a{color:var(--ink);font-size:14px;text-decoration:underline;
+ text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:3px}
+.stats{font-family:ui-monospace,'SF Mono',Menlo,monospace;
+ display:flex;gap:20px;flex-wrap:wrap;font-size:14px;opacity:.72;margin-top:10px}
 .stats b{font-variant-numeric:tabular-nums}
 /* ── 主体双栏 ── */
 main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
@@ -143,15 +151,17 @@ main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
 @media (max-width:960px){main{grid-template-columns:1fr}}
 /* 蒸馏栏 */
 #dnotes{position:sticky;top:78px;background:var(--card);border:1.5px solid var(--line);
- padding:22px 24px;box-shadow:6px 6px 0 rgba(16,16,16,.12)}
+ padding:22px 24px;box-shadow:6px 6px 0 var(--accent)}
 @media (max-width:960px){#dnotes{position:static}}
-#dnotes h2{font-size:15px;letter-spacing:3px;border-bottom:2px solid var(--line);
+#dnotes h2{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
+ font-size:17px;font-weight:900;border-bottom:1.5px solid var(--line);
  padding-bottom:8px;margin-bottom:14px}
-#dnotes h3{font-size:13px;letter-spacing:2px;color:var(--red);margin:18px 0 8px}
+#dnotes h3{font-size:13px;letter-spacing:2px;font-weight:800;margin:18px 0 8px;display:inline;
+ background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 2px}
 #dnotes .dsum p{font-size:17px;font-weight:700;line-height:1.7}
 #dnotes .ccl{padding-left:20px}
 #dnotes .ccl li{margin-bottom:9px;font-size:14.5px}
-#dnotes blockquote{border-left:3px solid var(--red);padding:2px 0 2px 12px;margin:10px 0;
+#dnotes blockquote{border-left:3px solid var(--accent);padding:2px 0 2px 12px;margin:10px 0;
  font-size:14.5px;font-weight:600}
 #dnotes blockquote cite{display:block;font-style:normal;opacity:.55;font-size:12.5px;margin-top:4px}
 #dnotes .act{padding-left:20px}
@@ -161,25 +171,29 @@ main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
 #tl .tip{font-size:12.5px;opacity:.6;margin-bottom:10px}
 #chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 #chips .chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);
- background:var(--card);border-radius:999px;padding:3px 12px 3px 8px;font-size:13px;
+ background:#fff;border-radius:999px;padding:3px 12px 3px 8px;font-size:13px;
  font-weight:600;cursor:pointer;user-select:none}
 #chips .chip .dt{width:9px;height:9px;border-radius:50%;flex:none}
-#chips .chip .dur{opacity:.5;font-weight:400;font-size:11.5px}
+#chips .chip .dur{opacity:.5;font-weight:400;font-size:11.5px;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
 #chips .chip.on{background:var(--ink);color:#fff}
-.seg{display:flex;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;
+.seg{display:flex;gap:10px;padding:9px 10px;cursor:pointer;
  scroll-margin:140px;align-items:baseline}
-.seg:hover{background:rgba(16,16,16,.055)}
+.seg:hover{background:rgba(17,17,17,.05)}
 .seg .t{flex:none;font-variant-numeric:tabular-nums;font-size:12.5px;opacity:.55;
- padding-top:2px;min-width:44px;text-align:right}
+ padding-top:2px;min-width:44px;text-align:right;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
 .seg .n{flex:none;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;
  min-width:74px}
 .seg .n .dt{width:8px;height:8px;border-radius:50%;flex:none}
 .seg p{font-size:15px}
-.seg.now{background:rgba(224,43,32,.09);outline:1.5px solid rgba(224,43,32,.45)}
-.seg.now .t{opacity:1;color:var(--red);font-weight:800}
+/* 当前段：主站同款马克笔黄 */
+.seg.now{background:rgba(255,210,63,.30);outline:1.5px solid var(--line)}
+.seg.now .t{opacity:1;font-weight:800}
 body.hide .seg{opacity:.18}
 body.hide .seg.hit{opacity:1}
-footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55}
+footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace}
 </style></head><body>
 
 <div id="bar">
@@ -347,7 +361,7 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True):
                 .replace("[[ID]]", card.esc(meta.get("id") or outdir.name))
                 .replace("[[DATA]]", data)
                 .replace("[[AUDIOSRC]]", card.esc(audio_url))
-                .replace("[[BG]]", BG).replace("[[RED]]", RED))
+                .replace("[[BG]]", BG).replace("[[ACCENT]]", ACCENT))
     out = outdir / "distilled.html"
     if not write:
         return html_out

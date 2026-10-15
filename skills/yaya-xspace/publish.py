@@ -157,9 +157,19 @@ def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
 
 TYPE_LABEL = {"space": "SPACE", "interview": "INTERVIEW", "youtube": "YOUTUBE", "audio": "AUDIO"}
 
+# 视觉语言与主站 eatmoreduck.com 对齐：纯白底、黄 #FFD23F 马克笔高亮、
+# 衬线大标题、等宽字元信息、黄 offset 阴影卡片（主站提取，别再漂回瑞士红）
+SITE_CSS = {
+    "bg": "#FFFFFF", "ink": "#111111", "accent": "#FFD23F",
+    "serif": "'Serif Local','Noto Serif SC','Songti SC',serif",
+    "mono": "ui-monospace,'SF Mono',Menlo,Consolas,monospace",
+}
+
 
 def _index_html(entries: list[dict]) -> str:
     e = card.esc
+    c = SITE_CSS
+
     def _fmt_dur(sec: int) -> str:
         h, rem = divmod(sec, 3600)
         return f"{h}h{rem // 60:02d}m" if h else f"{sec // 60}min"
@@ -182,40 +192,57 @@ def _index_html(entries: list[dict]) -> str:
                   f'{summary}</a>')
     return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>yaya · audio assets</title>
+<title>eatmoreduck · audio assets</title>
 <style>
-:root{{--bg:#F1F0EC;--ink:#101010;--red:#E02B20}}
+:root{{--bg:{c['bg']};--ink:{c['ink']};--accent:{c['accent']}}}
 *{{margin:0;padding:0;box-sizing:border-box}}
-body{{background:var(--bg);color:var(--ink);font-family:-apple-system,'PingFang SC','Hiragino Sans GB',sans-serif}}
-.wrap{{max-width:860px;margin:0 auto;padding:48px 20px 60px}}
-.top{{display:flex;justify-content:space-between;align-items:baseline;
- border-bottom:2px solid var(--ink);padding-bottom:14px}}
-.top h1{{font-size:26px;font-weight:900;letter-spacing:2px}}
-.top a{{color:var(--red);font-size:13px;text-decoration:none}}
-#filters{{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}}
-#filters .f{{border:1.5px solid var(--ink);background:transparent;border-radius:999px;
- padding:3px 14px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px}}
-#filters .f.on{{background:var(--ink);color:#fff}}
-.note{{font-size:13px;opacity:.6;margin:8px 0 24px}}
-.card{{display:block;background:#FBFAF7;border:1.5px solid var(--ink);
- padding:18px 22px;margin-bottom:16px;text-decoration:none;color:inherit;
- box-shadow:5px 5px 0 rgba(16,16,16,.12);transition:transform .08s}}
-.card:hover{{transform:translate(-2px,-2px)}}
+body{{background:var(--bg);color:var(--ink);
+ font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif}}
+.wrap{{max-width:880px;margin:0 auto;padding:34px 20px 60px}}
+/* 报头：brand + 横线，同主站 masthead */
+.mast{{display:flex;justify-content:space-between;align-items:center;
+ border-bottom:1.5px solid var(--ink);padding-bottom:14px;
+ font-family:{c['mono']};font-size:14px}}
+.mast .brand{{font-weight:700}}
+.mast .brand .dt{{display:inline-block;width:10px;height:10px;border-radius:50%;
+ background:var(--accent);border:1.5px solid var(--ink);margin-right:8px;vertical-align:-1px}}
+.mast a{{color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);padding:2px 10px}}
+.mast a:hover{{background:var(--accent)}}
+h1{{font-family:{c['serif']};font-weight:900;font-size:clamp(30px,5vw,44px);
+ line-height:1.25;margin:44px 0 10px}}
+h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 2px}}
+.sub{{font-family:{c['mono']};font-size:13.5px;color:#555;margin-bottom:22px}}
+#filters{{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}}
+#filters .f{{border:1.5px solid var(--ink);background:#fff;border-radius:0;
+ padding:4px 16px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;
+ font-family:{c['mono']}}}
+#filters .f.on{{background:var(--ink);color:var(--accent)}}
+.card{{display:block;background:#fff;border:1.5px solid var(--ink);
+ padding:20px 24px;margin-bottom:18px;text-decoration:none;color:inherit;
+ box-shadow:6px 6px 0 var(--accent);transition:transform .08s,box-shadow .08s}}
+.card:hover{{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--accent)}}
 .card[hidden]{{display:none}}
 .row1{{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}}
-.card h3{{font-size:18px;font-weight:800;line-height:1.5}}
-.badge{{flex:none;border:1.5px solid var(--ink);border-radius:4px;padding:1px 8px;
- font-size:10.5px;font-weight:800;letter-spacing:1.5px}}
-.card .meta{{font-size:12.5px;opacity:.65;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}}
-.card .dt{{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}}
-.card .sum{{font-size:14px;opacity:.8;margin-top:8px;line-height:1.7}}
-.foot{{margin-top:30px;font-size:12.5px;opacity:.55}}
+.card h3{{font-family:{c['serif']};font-size:21px;font-weight:900;line-height:1.45}}
+.badge{{flex:none;background:var(--accent);border:1.5px solid var(--ink);
+ padding:2px 10px;font-size:10.5px;font-weight:800;letter-spacing:1.5px;
+ font-family:{c['mono']}}}
+.card .meta{{font-family:{c['mono']};font-size:12px;color:#555;margin-top:8px;
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap}}
+.card .dt{{width:9px;height:9px;border-radius:50%;background:var(--accent);
+ border:1.5px solid var(--ink);flex:none}}
+.card .sum{{font-size:14px;opacity:.82;margin-top:10px;line-height:1.8}}
+.foot{{margin-top:34px;border-top:1.5px solid var(--ink);padding-top:14px;
+ font-family:{c['mono']};font-size:12px;color:#555;
+ display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}}
+.foot a{{color:var(--ink)}}
 </style></head><body><div class="wrap">
-<div class="top"><h1>YAYA · AUDIO ASSETS</h1><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">yaya-skills ↗</a></div>
+<div class="mast"><span class="brand"><span class="dt"></span>eatmoreduck · audio</span><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></div>
+<h1>把值得听的，<span class="hl">沉淀成资产</span>。</h1>
+<p class="sub">语音内容 → 要点 + 原声，点哪段听哪段。平台回放会过期，这里长期在。</p>
 <div id="filters"></div>
-<p class="note">语音内容的文字沉淀与原声存档——平台回放会过期，这里长期在。点卡片收听，点哪段听哪段。</p>
 {cards}
-<p class="foot">由 yaya-skills 本地蒸馏生成 · 托管于 Cloudflare</p>
+<div class="foot"><span>由 yaya-skills 本地蒸馏生成 · 托管于 Cloudflare</span><span>yaya-skills · MIT</span></div>
 </div>
 <script>
 const cards = [...document.querySelectorAll('.card')];
