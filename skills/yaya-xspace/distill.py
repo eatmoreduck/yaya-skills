@@ -675,6 +675,15 @@ def main() -> int:
         audio = download_via_xdl(url, outdir)
         meta = _load_meta(outdir)  # 重新读：meta.json 刚由 xdl 写入（首跑时上面那次读不到）
 
+    # Space 日期（资产库排序/展示用）：下载归档当天 ≈ 办场当天；重跑不覆盖
+    if not meta.get("recorded_at"):
+        meta["recorded_at"] = time.strftime("%Y-%m-%d")
+        try:
+            (outdir / "meta.json").write_text(
+                json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        except OSError as e:
+            log(f"⚠️ recorded_at 写入失败（不影响流水线）：{e}")
+
     # 2) 转写（交给 yaya-asr）
     segs = run_asr(audio, outdir, args.speakers, args.no_crosscheck)
 

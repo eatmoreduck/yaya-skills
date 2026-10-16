@@ -147,11 +147,16 @@ def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
     sid = meta.get("id") or outdir.name
     # URL 即结构：/<type>/<id>/（Pages 尾斜杠自动出 index.html，无需 .html 后缀）
     path = f"{ctype}/{sid}"
+    # Space 日期：优先 meta.recorded_at（流水线落盘），回退音频 mtime（下载日≈办场日）
+    # 注意 audio 路径在本函数内自取（publish() 的 audio 变量进不来）
+    audio_file = outdir / "audio.m4a"
+    date = meta.get("recorded_at") or time.strftime(
+        "%Y-%m-%d", time.localtime(audio_file.stat().st_mtime))
     # write=False：只取 HTML 内容组装线上页，别把占位音频地址写进本地收听页
     # mast=True：线上版带主站同款报头（鸭子 logo + 回资产库）
     page_html = page.build(outdir, audio_url=audio_url, write=False, mast=True)
     summary = dist.get("summary") or ""
-    return {"id": sid, "type": ctype, "lang": "zh", "path": path,
+    return {"id": sid, "type": ctype, "lang": "zh", "path": path, "date": date,
             "title": dist.get("title") or meta.get("title") or sid,
             "summary": summary[:120], "url": meta.get("url") or "",
             "n_spk": dist.get("n_spk") or "", "duration_sec": duration_sec,
@@ -178,11 +183,13 @@ def _index_html(entries: list[dict]) -> str:
         h, rem = divmod(sec, 3600)
         return f"{h}h{rem // 60:02d}m" if h else f"{sec // 60}min"
     cards = ""
-    for it in sorted(entries, key=lambda x: x.get("published_at", ""), reverse=True):
+    # 倒序：按 Space 日期（date，回退发布日），新的在前
+    for it in sorted(entries, key=lambda x: (x.get("date") or x.get("published_at") or "",
+                                             x.get("published_at") or ""), reverse=True):
         t = it.get("type") or "audio"
         label = TYPE_LABEL.get(t, t.upper())
         summary = f'<p class="sum">{e(it["summary"])}</p>' if it.get("summary") else ""
-        meta_bits = [e(it["published_at"])]
+        meta_bits = [e(it.get("date") or it.get("published_at") or "")]
         if it.get("duration_sec"):
             meta_bits.append(_fmt_dur(int(it["duration_sec"])))
         if it.get("n_spk"):

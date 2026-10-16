@@ -124,7 +124,8 @@ body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microso
  color:var(--ink);line-height:1.7}
 /* ── 吸顶播放条 ── */
 #bar{position:sticky;top:0;z-index:9;background:var(--bg);
- border-bottom:1.5px solid var(--line);padding:10px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+ border-bottom:1.5px solid var(--line);padding:10px max(18px,calc((100% - 1200px)/2 + 18px));
+ display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 #bar .btn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);
  background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
 #bar .btn:active{transform:scale(.94)}
@@ -136,7 +137,7 @@ body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microso
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 #rate:hover{background:var(--accent)}
 /* ── 头部 ── */
-header{padding:34px 22px 10px;max-width:1200px;margin:0 auto}
+header{padding:34px 18px 10px;max-width:1200px;margin:0 auto}
 header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6;
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 header h1{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
@@ -197,12 +198,14 @@ body.hide .seg.hit{opacity:1}
 footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 /* ── 报头（线上版才有）：主站同款鸭子 logo + 返回资产库 ── */
+/* mast 与 #bar 的左右边距对齐正文 1200px 版心（宽屏时扩展到版心边缘） */
 .mast{display:flex;justify-content:space-between;align-items:center;
- border-bottom:1.5px solid var(--line);padding:12px 18px;
+ border-bottom:1.5px solid var(--line);padding:12px max(18px,calc((100% - 1200px)/2 + 18px));
  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px}
 .mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
 .mast img{display:block}
-.mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink)}
+.mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink);
+ background:#fff;font-family:inherit;font-size:13px;cursor:pointer}
 .mast .gh:hover{background:var(--accent)}
 .mast-links{display:flex;gap:10px}
 </style></head><body>
@@ -309,6 +312,19 @@ document.addEventListener('keydown', ev => {
   if (ev.code === 'Space' && ev.target === document.body) { ev.preventDefault(); playBtn.click(); }
 });
 
+/* ── 分享：复制「标题 + 当前链接」，mast 版才有按钮 ── */
+const shareBtn = document.getElementById('share');
+if (shareBtn) shareBtn.onclick = async () => {
+  const text = (document.title.split(' · ')[0] || document.title) + '\n' + location.href;
+  try {
+    await navigator.clipboard.writeText(text);
+    shareBtn.textContent = '已复制 ✓';
+  } catch (e) {
+    prompt('复制分享链接：', location.href);
+  }
+  setTimeout(() => shareBtn.textContent = '分享', 1600);
+};
+
 /* ── 高亮跟随（用户滚动后 4s 内不打架）── */
 let curIdx = 0, follow = true, followTimer = null;
 addEventListener('wheel', bump, {passive:true});
@@ -373,6 +389,7 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
                  '<a class="brand" href="/"><img src="/site-favicon.svg" alt="" '
                  'width="18" height="18">eatmoreduck · audio</a>'
                  '<span class="mast-links">'
+                 '<button class="gh share" id="share" type="button">分享</button>'
                  '<a class="gh" href="https://www.eatmoreduck.com/" '
                  'target="_blank" rel="noopener">主站 ↗</a>'
                  '<a class="gh" href="https://github.com/eatmoreduck/yaya-skills" '
