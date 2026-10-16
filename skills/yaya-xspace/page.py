@@ -157,7 +157,8 @@ main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
 #dnotes h2{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
  font-size:17px;font-weight:900;border-bottom:1.5px solid var(--line);
  padding-bottom:8px;margin-bottom:14px}
-#dnotes h3{font-size:13px;letter-spacing:2px;font-weight:800;margin:18px 0 8px;display:inline;
+#dnotes h3{font-size:13px;letter-spacing:2px;font-weight:800;margin:18px 0 8px;
+ width:fit-content; /* 块级保持垂直边距，fit-content 让黄色高亮只贴字不拉满行 */
  background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 2px}
 #dnotes .dsum p{font-size:17px;font-weight:700;line-height:1.7}
 #dnotes .ccl{padding-left:20px}
@@ -203,6 +204,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opaci
 .mast img{display:block}
 .mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink)}
 .mast .gh:hover{background:var(--accent)}
+.mast-links{display:flex;gap:10px}
 </style></head><body>
 [[MASTHEAD]]
 <div id="bar">
@@ -370,8 +372,11 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
     mast_html = ('<div class="mast">'
                  '<a class="brand" href="/"><img src="/site-favicon.svg" alt="" '
                  'width="18" height="18">eatmoreduck · audio</a>'
+                 '<span class="mast-links">'
+                 '<a class="gh" href="https://www.eatmoreduck.com/" '
+                 'target="_blank" rel="noopener">主站 ↗</a>'
                  '<a class="gh" href="https://github.com/eatmoreduck/yaya-skills" '
-                 'target="_blank" rel="noopener">GitHub ↗</a></div>') if mast else ""
+                 'target="_blank" rel="noopener">GitHub ↗</a></span></div>') if mast else ""
     favicon_html = ('<link rel="icon" type="image/svg+xml" href="/site-favicon.svg">'
                     if mast else "")
 

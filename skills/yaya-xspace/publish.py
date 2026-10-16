@@ -213,6 +213,7 @@ body{{background:var(--bg);color:var(--ink);
  background:var(--accent);border:1.5px solid var(--ink);margin-right:8px;vertical-align:-1px}}
 .mast a{{color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);padding:2px 10px}}
 .mast a:hover{{background:var(--accent)}}
+.mast-links{{display:flex;gap:10px}}
 h1{{font-family:{c['serif']};font-weight:900;font-size:clamp(30px,5vw,44px);
  line-height:1.25;margin:44px 0 10px}}
 h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 2px}}
@@ -242,7 +243,7 @@ h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 
  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}}
 .foot a{{color:var(--ink)}}
 </style></head><body><div class="wrap">
-<div class="mast"><span class="brand"><img src="/site-favicon.svg" alt="eatmoreduck" width="18" height="18">eatmoreduck · audio</span><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></div>
+<div class="mast"><a class="brand" href="/"><img src="/site-favicon.svg" alt="eatmoreduck" width="18" height="18">eatmoreduck · audio</a><span class="mast-links"><a class="gh" href="https://www.eatmoreduck.com/" target="_blank" rel="noopener">主站 ↗</a><a class="gh" href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></span></div>
 <h1>把值得听的，<span class="hl">沉淀成资产</span>。</h1>
 <p class="sub">语音内容 → 要点 + 原声，点哪段听哪段。平台回放会过期，这里长期在。</p>
 <div id="filters"></div>
