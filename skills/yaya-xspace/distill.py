@@ -589,6 +589,27 @@ def main() -> int:
                 log(f"勘误: {name}")
             else:
                 log(f"⚠️ 未变: {name}（没出现旧名？确认拼写）")
+        # labeled.json：机器接口的字母标签绝不动，但逐字稿文本里的人名错字
+        # 随勘误一并订正——否则收听页上蒸馏栏与逐字稿的名字打架
+        lj = outdir / "audio.labeled.json"
+        if lj.exists():
+            try:
+                data = json.loads(lj.read_text(encoding="utf-8"))
+                touched = False
+                for seg in data.get("segments", []):
+                    txt = seg.get("text") or ""
+                    nt = txt
+                    for old, new in pairs.items():
+                        nt = nt.replace(old, new)
+                    if nt != txt:
+                        seg["text"] = nt
+                        touched = True
+                if touched:
+                    lj.write_text(json.dumps(data, ensure_ascii=False) + "\n",
+                                  encoding="utf-8")
+                    log("勘误: audio.labeled.json（仅 text 字段，speaker 字母不动）")
+            except (OSError, json.JSONDecodeError) as e:
+                log(f"⚠️ labeled.json 勘误失败（不影响文本产物）：{e}")
         # speaker_names.json 的映射值同步（值可能是复合名：情感求/程序员、Ringo + 旺仔）
         names_json = outdir / "speaker_names.json"
         if names_json.exists():
