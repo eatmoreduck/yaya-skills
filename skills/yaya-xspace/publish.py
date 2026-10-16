@@ -48,7 +48,8 @@ WORKER_JS = """export default {
     const url = new URL(request.url);
     const m = url.pathname.match(/^\\/audio\\/([A-Za-z0-9._\\-]+)$/);
     if (!m) return new Response('not found', { status: 404 });
-    const key = decodeURIComponent(m[1]);
+    // R2 键带 audio/ 目录前缀；URL 的 /audio/ 是路由，正则消耗掉了，取键时补回
+    const key = 'audio/' + decodeURIComponent(m[1]);
     const base = {
       'Content-Type': 'audio/mp4',
       'Accept-Ranges': 'bytes',
@@ -329,9 +330,12 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
         return {"listen_url": "(dry-run)", "site_url": "(dry-run)"}
 
     log("⑤ 部署到 Cloudflare Pages…")
+    # --force 绕过 wrangler 4.x 的"新 Pages"代理（该代理在 project create 时
+    # 误报 static files 检测失败）；项目建好后后续命令自动走经典通道，无需再加
     wrangler("pages", "project", "create", PAGES_PROJECT,
-             "--production-branch=main", check=False)  # 已存在不算错
-    wrangler("pages", "deploy", str(SITE_DIR), f"--project-name={PAGES_PROJECT}")
+             "--production-branch=main", "--force", check=False)  # 已存在不算错
+    wrangler("pages", "deploy", str(SITE_DIR), f"--project-name={PAGES_PROJECT}",
+             "--branch=main", "--commit-dirty=true")  # 固定生产分支，别跟本地 git 分支走
 
     listen = f"{PAGES_BASE}/{entry['path']}/"
     log("=" * 60)
