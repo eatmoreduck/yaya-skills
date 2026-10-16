@@ -315,7 +315,7 @@ document.addEventListener('keydown', ev => {
 /* ── 分享：复制「标题 + 当前链接」，mast 版才有按钮 ── */
 const shareBtn = document.getElementById('share');
 if (shareBtn) shareBtn.onclick = async () => {
-  const text = (document.title.split(' · ')[0] || document.title) + '\n' + location.href;
+  const text = (document.title.split(' · ')[0] || document.title) + '\\n' + location.href;
   try {
     await navigator.clipboard.writeText(text);
     shareBtn.textContent = '已复制 ✓';
@@ -386,7 +386,7 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
 
     # 线上版报头与 favicon（本地版留空，绝对路径只在域名根下有效）
     mast_html = ('<div class="mast">'
-                 '<a class="brand" href="/"><img src="/site-favicon.svg" alt="" '
+                 '<a class="brand" href="https://www.eatmoreduck.com/"><img src="/site-favicon.svg" alt="" '
                  'width="18" height="18">eatmoreduck · audio</a>'
                  '<span class="mast-links">'
                  '<button class="gh share" id="share" type="button">分享</button>'
