@@ -115,6 +115,7 @@ def _distill_html(d: dict) -> str:
 _TMPL = """<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>[[TITLE]] · eatmoreduck 收听页</title>
+[[FAVICON]]
 <style>
 :root{--bg:[[BG]];--ink:#111111;--accent:[[ACCENT]];--line:#111111;--card:#FFFFFF}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -194,8 +195,16 @@ body.hide .seg{opacity:.18}
 body.hide .seg.hit{opacity:1}
 footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
+/* ── 报头（线上版才有）：主站同款鸭子 logo + 返回资产库 ── */
+.mast{display:flex;justify-content:space-between;align-items:center;
+ border-bottom:1.5px solid var(--line);padding:12px 18px;
+ font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px}
+.mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
+.mast img{display:block}
+.mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink)}
+.mast .gh:hover{background:var(--accent)}
 </style></head><body>
-
+[[MASTHEAD]]
 <div id="bar">
   <button class="btn" id="play" aria-label="播放/暂停">▶</button>
   <span id="tm">00:00 / 00:00</span>
@@ -325,13 +334,16 @@ function tick(t){
 </script></body></html>"""
 
 
-def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True):
+def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
+          mast: bool = False):
     """outdir（含 audio.m4a / audio.labeled.json / distilled.md …）→ distilled.html
 
     audio_url：音频地址。默认同目录相对路径（本地 file:// 直接播）；
     上云时传完整 URL（如 https://<worker>.workers.dev/audio/<id>.m4a）。
     write=False 只返回 HTML 内容不落盘（publish 组装线上页用，
-    免得占位域名覆盖本地收听页）。"""
+    免得占位域名覆盖本地收听页）。
+    mast=True 线上版：加主站同款报头（鸭子 logo + 回资产库）+ favicon；
+    绝对路径（/site-favicon.svg、/）只在域名根下部署时有效，本地版不启用。"""
     d = _load(outdir)
     segs, names, meta, dist = d["segs"], d["names"], d["meta"], d["distill"]
     speakers = _speaker_meta(segs, names)
@@ -354,6 +366,15 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True):
         "names": names,
     }, ensure_ascii=False, separators=(",", ":"))
 
+    # 线上版报头与 favicon（本地版留空，绝对路径只在域名根下有效）
+    mast_html = ('<div class="mast">'
+                 '<a class="brand" href="/"><img src="/site-favicon.svg" alt="" '
+                 'width="18" height="18">eatmoreduck · audio</a>'
+                 '<a class="gh" href="https://github.com/eatmoreduck/yaya-skills" '
+                 'target="_blank" rel="noopener">GitHub ↗</a></div>') if mast else ""
+    favicon_html = ('<link rel="icon" type="image/svg+xml" href="/site-favicon.svg">'
+                    if mast else "")
+
     html_out = (_TMPL.replace("[[TITLE]]", card.esc(title))
                 .replace("[[STATS]]", stats)
                 .replace("[[SRC]]", src_html)
@@ -361,6 +382,8 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True):
                 .replace("[[ID]]", card.esc(meta.get("id") or outdir.name))
                 .replace("[[DATA]]", data)
                 .replace("[[AUDIOSRC]]", card.esc(audio_url))
+                .replace("[[FAVICON]]", favicon_html)
+                .replace("[[MASTHEAD]]", mast_html)
                 .replace("[[BG]]", BG).replace("[[ACCENT]]", ACCENT))
     out = outdir / "distilled.html"
     if not write:

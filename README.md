@@ -160,7 +160,9 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
-│       ├── card.py          出图：distilled.md → 手绘风分享图 PNG
+│       ├── card.py          出图：distilled.md → 五风格分享图 PNG
+│       ├── page.py          收听页：蒸馏稿+逐字稿+原声 → 点哪段听哪段
+│       ├── publish.py       发布：音频进 R2、收听页进 Cloudflare Pages（--publish）
 │       ├── fonts/           手写体（OFL，出图用）
 │       └── out/             产物与音频归档（gitignore，数据跟着 skill 走）
 ├── README.md

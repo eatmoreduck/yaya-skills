@@ -34,9 +34,11 @@ import page    # 同目录：收听页生成（audio_url 参数化）
 
 SKILL_DIR = Path(__file__).resolve().parent
 OUT_ROOT = SKILL_DIR / "out"
-PUB_ROOT = OUT_ROOT / ".publish"      # 发布工位：manifest 源数据 + site 本地镜像（out/ 已 gitignore）
+PUB_ROOT = OUT_ROOT / ".publish"      # 发布工位：manifest 源数据 + pages 持久页 + site 镜像（out/ 已 gitignore）
 MANIFEST = PUB_ROOT / "manifest.json"  # 源数据（持久）；site/ 是派生物，每次发布全量重建
+PAGES_DIR = PUB_ROOT / "pages"         # 每场收听页的持久副本（改模板后全量重建不丢场次）
 SITE_DIR = PUB_ROOT / "site"
+FAVICON_SRC = SKILL_DIR / "site-favicon.svg"  # 主站同款鸭子 logo（与 eatmoreduck.com 一致）
 
 R2_BUCKET = "yaya-audio"
 WORKER_NAME = "yaya-audio-cdn"
@@ -146,7 +148,8 @@ def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
     # URL 即结构：/<type>/<id>/（Pages 尾斜杠自动出 index.html，无需 .html 后缀）
     path = f"{ctype}/{sid}"
     # write=False：只取 HTML 内容组装线上页，别把占位音频地址写进本地收听页
-    page_html = page.build(outdir, audio_url=audio_url, write=False)
+    # mast=True：线上版带主站同款报头（鸭子 logo + 回资产库）
+    page_html = page.build(outdir, audio_url=audio_url, write=False, mast=True)
     summary = dist.get("summary") or ""
     return {"id": sid, "type": ctype, "lang": "zh", "path": path,
             "title": dist.get("title") or meta.get("title") or sid,
@@ -193,6 +196,7 @@ def _index_html(entries: list[dict]) -> str:
                   f'{summary}</a>')
     return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/site-favicon.svg">
 <title>eatmoreduck · audio assets</title>
 <style>
 :root{{--bg:{c['bg']};--ink:{c['ink']};--accent:{c['accent']}}}
@@ -238,7 +242,7 @@ h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 
  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}}
 .foot a{{color:var(--ink)}}
 </style></head><body><div class="wrap">
-<div class="mast"><span class="brand"><span class="dt"></span>eatmoreduck · audio</span><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></div>
+<div class="mast"><span class="brand"><img src="/site-favicon.svg" alt="eatmoreduck" width="18" height="18">eatmoreduck · audio</span><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></div>
 <h1>把值得听的，<span class="hl">沉淀成资产</span>。</h1>
 <p class="sub">语音内容 → 要点 + 原声，点哪段听哪段。平台回放会过期，这里长期在。</p>
 <div id="filters"></div>
@@ -265,6 +269,17 @@ function chip(label, val) {{
 chip('全部', null);
 types.forEach(t => chip(t.toUpperCase(), t));
 </script></body></html>"""
+
+
+def _audio_exists(url: str) -> bool:
+    """音频是否已在 R2（经 Worker HEAD 探测）——在就不重传，改模板重发布秒级。"""
+    import urllib.request
+    try:
+        req = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return r.status in (200, 206)
+    except Exception:
+        return False
 
 
 def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
@@ -297,11 +312,15 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
     entry = _entry(outdir, audio_url, ctype=ctype)
 
     if not dry_run:
-        log(f"③ 上传音频到 R2（{audio.stat().st_size/1e6:.0f}MB，几分钟看带宽）…")
-        wrangler("r2", "object", "put", f"{R2_BUCKET}/{audio_key}",
-                 f"--file={audio}", "--remote", timeout=1800)
+        if _audio_exists(audio_url):
+            log("③ 音频已在 R2，跳过上传")
+        else:
+            log(f"③ 上传音频到 R2（{audio.stat().st_size/1e6:.0f}MB，几分钟看带宽）…")
+            wrangler("r2", "object", "put", f"{R2_BUCKET}/{audio_key}",
+                     f"--file={audio}", "--remote", timeout=1800)
 
-    # ④ 组装站点：manifest upsert（v2，源数据在 site 外持久）→ site 全量重建 → 索引页
+    # ④ 组装站点：manifest upsert（v2，源数据在 site 外持久）→ 收听页存持久目录
+    #    → site 全量重建（pages 拷入 + manifest + 索引页 + favicon）
     log("④ 组装站点与索引页…")
     PUB_ROOT.mkdir(parents=True, exist_ok=True)
     try:
@@ -313,16 +332,21 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
     entries.append({k: v for k, v in entry.items() if k != "page_html"})
     MANIFEST.write_text(json.dumps({"version": 2, "entries": entries},
                                    ensure_ascii=False, indent=1), encoding="utf-8")
-    # site/ 是纯派生物：整体重建，旧结构/旧场次残留不会跟着部署上去
+    # 本场的线上页写进持久目录（改模板后重发布不丢其他场次）
+    page_dir = PAGES_DIR / entry["path"]
+    page_dir.mkdir(parents=True, exist_ok=True)
+    (page_dir / "index.html").write_text(entry["page_html"], encoding="utf-8")
+    # site/ 是纯派生物：pages 拷入 + manifest + 索引 + favicon，旧结构不残留
     if SITE_DIR.exists():
         shutil.rmtree(SITE_DIR)
     SITE_DIR.mkdir(parents=True, exist_ok=True)
+    if PAGES_DIR.exists():
+        shutil.copytree(PAGES_DIR, SITE_DIR, dirs_exist_ok=True)
     (SITE_DIR / "manifest.json").write_text(
         json.dumps({"version": 2, "entries": entries}, ensure_ascii=False, indent=1),
         encoding="utf-8")
-    d = SITE_DIR / entry["path"]
-    d.mkdir(parents=True, exist_ok=True)
-    (d / "index.html").write_text(entry["page_html"], encoding="utf-8")
+    if FAVICON_SRC.exists():
+        shutil.copy2(FAVICON_SRC, SITE_DIR / "site-favicon.svg")
     (SITE_DIR / "index.html").write_text(_index_html(entries), encoding="utf-8")
 
     if dry_run:

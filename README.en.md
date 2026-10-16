@@ -161,7 +161,9 @@ yaya-skills/
 │       ├── README.md
 │       ├── run.sh
 │       ├── distill.py
-│       ├── card.py          share-card renderer: distilled.md → hand-drawn PNG
+│       ├── card.py          share-card renderer: distilled.md → 5-style PNG
+│       ├── page.py          listen page: notes + transcript + audio, click-to-listen
+│       ├── publish.py       publisher: audio → R2, pages → Cloudflare Pages (--publish)
 │       ├── fonts/           handwriting fonts (OFL, used by the renderer)
 │       └── out/             outputs & audio archives (gitignored — data follows the skill)
 ├── README.md
