@@ -84,6 +84,8 @@ def _speaker_meta(segs: list, names: dict) -> list[dict]:
         total[spk] = total.get(spk, 0.0) + (e - s)
     out = []
     for i, (spk, t) in enumerate(sorted(total.items(), key=lambda kv: -kv[1])):
+        if t < 30:   # 分离杂簇（咳嗽/单字碎片）不配拥有 chip
+            continue
         out.append({"letter": spk,
                     "name": names.get(spk) or spk,  # 拿不到真名保留字母（宁字母不编造）
                     "dot": DOTS[i % len(DOTS)],
@@ -289,7 +291,7 @@ DATA.speakers.forEach(sp => {
 });
 
 /* ── 逐字稿渲染 ── */
-const nameOf = l => (DATA.names[l] || l);
+const nameOf = l => (DATA.names[l] || '其他');
 const dotOf = l => { const s = DATA.speakers.find(x => x.letter === l); return s ? s.dot : '#888'; };
 const frag = document.createDocumentFragment();
 DATA.segments.forEach((sg, i) => {
