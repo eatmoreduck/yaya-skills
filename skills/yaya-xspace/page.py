@@ -124,8 +124,10 @@ body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microso
  color:var(--ink);line-height:1.7}
 /* ── 吸顶播放条 ── */
 #bar{position:sticky;top:0;z-index:9;background:var(--bg);
- border-bottom:1.5px solid var(--line);padding:10px max(18px,calc((100% - 1200px)/2 + 18px));
+ padding:10px max(18px,calc((100% - 1060px)/2 + 18px));
  display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#bar::after{content:"";position:absolute;left:max(18px,calc((100% - 1060px)/2 + 18px));
+ right:max(18px,calc((100% - 1060px)/2 + 18px));bottom:0;height:1.5px;background:var(--line)}
 #bar .btn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);
  background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
 #bar .btn:active{transform:scale(.94)}
@@ -137,7 +139,7 @@ body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microso
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 #rate:hover{background:var(--accent)}
 /* ── 头部 ── */
-header{padding:34px 18px 10px;max-width:1200px;margin:0 auto}
+header{padding:34px 18px 10px;max-width:1060px;margin:0 auto}
 header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6;
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 header h1{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
@@ -148,13 +150,14 @@ header .src a{color:var(--ink);font-size:14px;text-decoration:underline;
  display:flex;gap:20px;flex-wrap:wrap;font-size:14px;opacity:.72;margin-top:10px}
 .stats b{font-variant-numeric:tabular-nums}
 /* ── 主体双栏 ── */
-main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
+main{max-width:1060px;margin:18px auto 60px;padding:0 18px;
  display:grid;grid-template-columns:minmax(320px,5fr) 7fr;gap:26px;align-items:start}
 @media (max-width:960px){main{grid-template-columns:1fr}}
 /* 蒸馏栏 */
 #dnotes{position:sticky;top:78px;background:var(--card);border:1.5px solid var(--line);
- padding:22px 24px;box-shadow:6px 6px 0 var(--accent)}
-@media (max-width:960px){#dnotes{position:static}}
+ padding:22px 24px;box-shadow:6px 6px 0 var(--accent);
+ max-height:calc(100vh - 98px);overflow-y:auto;overscroll-behavior:contain}
+@media (max-width:960px){#dnotes{position:static;max-height:none;overflow:visible}}
 #dnotes h2{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
  font-size:17px;font-weight:900;border-bottom:1.5px solid var(--line);
  padding-bottom:8px;margin-bottom:14px}
@@ -195,13 +198,15 @@ main{max-width:1200px;margin:18px auto 60px;padding:0 18px;
 .seg.now .t{opacity:1;font-weight:800}
 body.hide .seg{opacity:.18}
 body.hide .seg.hit{opacity:1}
-footer{max-width:1200px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
+footer{max-width:1060px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
  font-family:ui-monospace,'SF Mono',Menlo,monospace}
 /* ── 报头（线上版才有）：主站同款鸭子 logo + 返回资产库 ── */
-/* mast 与 #bar 的左右边距对齐正文 1200px 版心（宽屏时扩展到版心边缘） */
-.mast{display:flex;justify-content:space-between;align-items:center;
- border-bottom:1.5px solid var(--line);padding:12px max(18px,calc((100% - 1200px)/2 + 18px));
+/* mast 与 #bar 的左右边距对齐正文 1060px 版心（宽屏时扩展到版心边缘） */
+.mast{display:flex;justify-content:space-between;align-items:center;position:relative;
+ padding:12px max(18px,calc((100% - 1060px)/2 + 18px));
  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px}
+.mast::after{content:"";position:absolute;left:max(18px,calc((100% - 1060px)/2 + 18px));
+ right:max(18px,calc((100% - 1060px)/2 + 18px));bottom:0;height:1.5px;background:var(--line)}
 .mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
 .mast img{display:block}
 .mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink);
