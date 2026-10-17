@@ -404,6 +404,7 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
                  'width="18" height="18">eatmoreduck · audio</a>'
                  '<span class="mast-links">'
                  '<button class="gh share" id="share" type="button">分享</button>'
+                 '<a class="gh" href="/">资产库</a>'
                  '<a class="gh" href="https://www.eatmoreduck.com/" '
                  'target="_blank" rel="noopener">主站 ↗</a>'
                  '<a class="gh" href="https://github.com/eatmoreduck/yaya-skills" '
