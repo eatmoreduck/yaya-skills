@@ -45,7 +45,7 @@ SITE_ASSETS = ["site-favicon.svg", "site-jbmono-400.woff2", "site-jbmono-500.wof
 R2_BUCKET = "yaya-audio"
 WORKER_NAME = "yaya-audio-cdn"
 PAGES_PROJECT = "yaya-assets"
-PAGES_BASE = f"https://{PAGES_PROJECT}.pages.dev"
+PAGES_BASE = "https://audio.eatmoreduck.com"  # 自定义域（Pages 项目绑定的 production domain）
 
 WORKER_JS = """export default {
   async fetch(request, env) {
