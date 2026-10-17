@@ -39,6 +39,8 @@ MANIFEST = PUB_ROOT / "manifest.json"  # 源数据（持久）；site/ 是派生
 PAGES_DIR = PUB_ROOT / "pages"         # 每场收听页的持久副本（改模板后全量重建不丢场次）
 SITE_DIR = PUB_ROOT / "site"
 FAVICON_SRC = SKILL_DIR / "site-favicon.svg"  # 主站同款鸭子 logo（与 eatmoreduck.com 一致）
+SITE_ASSETS = ["site-favicon.svg", "site-jbmono-400.woff2", "site-jbmono-500.woff2"]
+# ↑ 随站点部署的主站资产：favicon + JetBrains Mono（收听页 mono 字体与主站一致）
 
 R2_BUCKET = "yaya-audio"
 WORKER_NAME = "yaya-audio-cdn"
@@ -353,8 +355,10 @@ def publish(outdir: Path, dry_run: bool = False, ctype: str = "auto") -> dict:
     (SITE_DIR / "manifest.json").write_text(
         json.dumps({"version": 2, "entries": entries}, ensure_ascii=False, indent=1),
         encoding="utf-8")
-    if FAVICON_SRC.exists():
-        shutil.copy2(FAVICON_SRC, SITE_DIR / "site-favicon.svg")
+    for asset in SITE_ASSETS:
+        src = SKILL_DIR / asset
+        if src.exists():
+            shutil.copy2(src, SITE_DIR / asset)
     (SITE_DIR / "index.html").write_text(_index_html(entries), encoding="utf-8")
 
     if dry_run:

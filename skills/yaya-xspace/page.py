@@ -117,6 +117,12 @@ _TMPL = """<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <title>[[TITLE]] · eatmoreduck 收听页</title>
 [[FAVICON]]
 <style>
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;
+ src:url("/jbmono-400.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;
+ src:url("/jbmono-500.woff2") format("woff2")}
+</style>
+<style>
 :root{--bg:[[BG]];--ink:#111111;--accent:[[ACCENT]];--line:#111111;--card:#FFFFFF}
 *{margin:0;padding:0;box-sizing:border-box}
 html{background:var(--bg)}
@@ -133,20 +139,20 @@ body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microso
 #bar .btn:active{transform:scale(.94)}
 #prog{flex:1 1 200px;accent-color:var(--ink);height:6px;cursor:pointer}
 #tm{font-variant-numeric:tabular-nums;font-size:13px;opacity:.75;white-space:nowrap;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 #rate{border:1.5px solid var(--line);background:#fff;border-radius:0;
  padding:3px 12px;font-size:13px;font-weight:700;cursor:pointer;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 #rate:hover{background:var(--accent)}
 /* ── 头部 ── */
 header{padding:34px 18px 10px;max-width:1060px;margin:0 auto}
 header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 header h1{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
  font-size:clamp(24px,4vw,40px);line-height:1.35;font-weight:900;margin:8px 0 12px}
 header .src a{color:var(--ink);font-size:14px;text-decoration:underline;
  text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:3px}
-.stats{font-family:ui-monospace,'SF Mono',Menlo,monospace;
+.stats{font-family:"JetBrains Mono",'SF Mono',Menlo,monospace;
  display:flex;gap:20px;flex-wrap:wrap;font-size:14px;opacity:.72;margin-top:10px}
 .stats b{font-variant-numeric:tabular-nums}
 /* ── 主体双栏 ── */
@@ -181,14 +187,14 @@ main{max-width:1060px;margin:18px auto 60px;padding:0 18px;
  font-weight:600;cursor:pointer;user-select:none}
 #chips .chip .dt{width:9px;height:9px;border-radius:50%;flex:none}
 #chips .chip .dur{opacity:.5;font-weight:400;font-size:11.5px;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 #chips .chip.on{background:var(--ink);color:#fff}
 .seg{display:flex;gap:10px;padding:9px 10px;cursor:pointer;
  scroll-margin:140px;align-items:baseline}
 .seg:hover{background:rgba(17,17,17,.05)}
 .seg .t{flex:none;font-variant-numeric:tabular-nums;font-size:12.5px;opacity:.55;
  padding-top:2px;min-width:44px;text-align:right;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 .seg .n{flex:none;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;
  min-width:74px}
 .seg .n .dt{width:8px;height:8px;border-radius:50%;flex:none}
@@ -199,20 +205,23 @@ main{max-width:1060px;margin:18px auto 60px;padding:0 18px;
 body.hide .seg{opacity:.18}
 body.hide .seg.hit{opacity:1}
 footer{max-width:1060px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
- font-family:ui-monospace,'SF Mono',Menlo,monospace}
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 /* ── 报头（线上版才有）：主站同款鸭子 logo + 返回资产库 ── */
 /* mast 与 #bar 的左右边距对齐正文 1060px 版心（宽屏时扩展到版心边缘） */
 .mast{display:flex;justify-content:space-between;align-items:center;position:relative;
- padding:12px max(18px,calc((100% - 1060px)/2 + 18px));
- font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px}
+ padding:14px max(18px,calc((100% - 1060px)/2 + 18px)) 13px;
+ font-family:"JetBrains Mono",'SF Mono',Menlo,monospace;font-size:12.5px}
 .mast::after{content:"";position:absolute;left:max(18px,calc((100% - 1060px)/2 + 18px));
  right:max(18px,calc((100% - 1060px)/2 + 18px));bottom:0;height:1.5px;background:var(--line)}
-.mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
+/* 主站 mast-nav 同语言：brand 无框、链接无框灰字、hover 黄色马克笔 */
+.mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink);
+ border:none;background:none;padding:0}
 .mast img{display:block}
-.mast .gh{border:1.5px solid var(--line);padding:2px 10px;color:var(--ink);
- background:#fff;font-family:inherit;font-size:13px;cursor:pointer}
-.mast .gh:hover{background:var(--accent)}
-.mast-links{display:flex;gap:10px}
+.mast .gh{color:var(--muted);border:none;background:none;padding:0;cursor:pointer;
+ font-family:inherit;font-size:inherit}
+.mast .gh:hover{color:var(--ink);
+ background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 96%,transparent 96%)}
+.mast-links{display:flex;gap:22px;align-items:baseline}
 </style></head><body>
 [[MASTHEAD]]
 <div id="bar">
