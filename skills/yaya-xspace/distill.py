@@ -675,9 +675,14 @@ def main() -> int:
         audio = download_via_xdl(url, outdir)
         meta = _load_meta(outdir)  # 重新读：meta.json 刚由 xdl 写入（首跑时上面那次读不到）
 
-    # Space 日期（资产库排序/展示用）：下载归档当天 ≈ 办场当天；重跑不覆盖
+    # Space 日期（资产库排序/展示用）：优先 yt-dlp 探测的开播时间戳（本地时区）——
+    # 补传旧场时归档当天 ≠ 办场当天，探测不到才退回归档当天兜底；重跑不覆盖
     if not meta.get("recorded_at"):
-        meta["recorded_at"] = time.strftime("%Y-%m-%d")
+        try:
+            meta["recorded_at"] = time.strftime(
+                "%Y-%m-%d", time.localtime(int(meta["started_at"])))
+        except (KeyError, TypeError, ValueError):
+            meta["recorded_at"] = time.strftime("%Y-%m-%d")
         try:
             (outdir / "meta.json").write_text(
                 json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

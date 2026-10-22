@@ -40,14 +40,16 @@ def probe_meta(url: str) -> dict:
     try:
         p = subprocess.run(
             ["uvx", "yt-dlp", "--no-warnings", "--simulate",
-             "--print", "%(title)s\t%(duration)s\t%(is_live)s", url],
+             "--print", "%(title)s\t%(duration)s\t%(is_live)s\t%(timestamp)s", url],
             capture_output=True, text=True, timeout=180)
         parts = (p.stdout.strip().splitlines()[-1] if p.stdout.strip() else "").split("\t")
         return {"title": parts[0] if parts else "",
                 "duration": parts[1] if len(parts) > 1 else "",
-                "is_live": parts[2] if len(parts) > 2 else ""}
+                "is_live": parts[2] if len(parts) > 2 else "",
+                # Space 开播秒时间戳（UTC），拿不到时 yt-dlp 给 "NA"——消费方自行容错
+                "started_at": parts[3] if len(parts) > 3 else ""}
     except Exception:
-        return {"title": "", "duration": "", "is_live": ""}
+        return {"title": "", "duration": "", "is_live": "", "started_at": ""}
 
 
 def _audio_files(outdir: Path) -> list[Path]:
