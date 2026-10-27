@@ -9,10 +9,11 @@ skills/
 ├── yaya-xdl/      原子能力：Space 链接 → audio.m4a（xdl.py，下载即归档）
 ├── yaya-asr/      原子能力：任意音频 → 带说话人转写（scripts/asr.py）
 ├── yaya-diarize/  原子能力：音频 → 说话人时间线 turns.json（diarize.py）
+├── yaya-corpus/   原子能力：文字稿 → 可听语料（MP3 + 双语字幕，scripts/synth_kokoro.py）——asr 的镜像
 └── yaya-xspace/   编排层：Space 链接 → 调 xdl 下载 → 调 asr 转写 → LLM 蒸馏（distill.py）
 ```
 
-- **依赖单向**：`yaya-xspace → yaya-xdl + yaya-asr`、`yaya-asr → yaya-diarize`；兄弟 skill 一律经 `run.sh` 子进程调用、靠相邻目录寻址。xdl/asr/diarize 是原子能力，互不依赖、不认识业务概念。不许反向依赖、不许复制实现。
+- **依赖单向**：`yaya-xspace → yaya-xdl + yaya-asr`、`yaya-asr → yaya-diarize`；兄弟 skill 一律经 `run.sh` 子进程调用、靠相邻目录寻址。xdl/asr/diarize/corpus 是原子能力，互不依赖、不认识业务概念（corpus 在概念上是 asr 的镜像——文字进音频出——但代码零依赖，自带 `.venv`）。不许反向依赖、不许复制实现。
 - **数据位置**（Leon 拍板，无例外）：产物/音频归档/缓存一律放 skill 自己的 `out/`（distill.py/xdl.py 各自的 `OUT_ROOT` 常量）——skill 数据跟 skill 走，删 skill 目录=删数据，`git pull` 不动未跟踪的 out/。**没有 YAYA_HOME 之类的搬移开关**——数据不许放 skill 外。`skills/*/out/` 已 .gitignore **整目录忽略**（私人 Space 笔记+音频绝不能进公开仓库）；`demo/` 是手工挑选、随仓库公开的样例产出，别和 out/ 混。不用 /tmp 存要留的东西（重启即清，违背下载即归档）。音频默认保留（下载即归档），`--no-keep-audio` 才删。
 - **asr 内部流水线并行**：转写（MLX/GPU）开始时以后台进程拉起 yaya-diarize（CPU 分离），`transcribe` 返回后 `wait()`。实测 GPU/CPU 零争抢；**但两个 MLX 进程绝不能并发**（会崩/拖死）——别把并行改成"再起一个转写进程"。
 - **新增 skill 必须登记** `.claude-plugin/marketplace.json` 的 `plugins[0].skills[]`——`source: "./"` 且显式列出时只加载列出的目录，不会自动扫描 `skills/`。步骤见根 README「如何新增一个 skill」。
@@ -20,8 +21,8 @@ skills/
 ## 验证命令（无测试套件，按此组合验证）
 
 ```bash
-skills/yaya-asr/.venv/bin/python -m py_compile skills/yaya-asr/scripts/asr.py skills/yaya-xspace/distill.py skills/yaya-xdl/xdl.py skills/yaya-diarize/diarize.py
-bash -n skills/yaya-asr/run.sh && bash -n skills/yaya-xspace/run.sh && bash -n skills/yaya-xdl/run.sh && bash -n skills/yaya-diarize/run.sh
+skills/yaya-asr/.venv/bin/python -m py_compile skills/yaya-asr/scripts/asr.py skills/yaya-xspace/distill.py skills/yaya-xdl/xdl.py skills/yaya-diarize/diarize.py skills/yaya-xspace/card.py
+bash -n skills/yaya-asr/run.sh && bash -n skills/yaya-xspace/run.sh && bash -n skills/yaya-xdl/run.sh && bash -n skills/yaya-diarize/run.sh && bash -n skills/yaya-corpus/run.sh
 # 端到端：跑一场已有数据的 Space（数据在 skills/yaya-xspace/out/ 下，缓存命中时只花一次 LLM 调用）
 bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/1oKMvNAwRdNGQ"
 ```
@@ -38,7 +39,7 @@ Python 环境在 `skills/yaya-asr/.venv`（uv 管理，3.13），别用系统 py
 6. **蒸馏 LLM 必须显式关思考**（`thinking: {"type":"disabled"}`，glm-5.x 默认开会吃光 token 返回空）；必须检查 `finish_reason=="length"` 并在 distilled.md 顶部打截断警告。Key=`ZAI_CODING_CN_API_KEY`。
 7. **多段 Space 陷阱**：主持人断线重连会新开 Space（新 ID），只拿到一段会得出"某内容不存在"的错误结论。转写稿出现重连信号（开场静音、"网络问题""你俩继续""刚才讲到哪"）要主动问用户是否有另一段。
 8. **分享图（card.py）**：蒸馏后自动把 distilled.md 渲染成 distilled.png（**五种风格 `--style` 可选、默认 `swiss`**——swiss 右上角装饰必须保持**红色声波弧**（三道同心弧+源点），白底实心红圆会被联想成"日之丸"（Leon 点名要避的坑），别改回圆点或方块；Chrome headless 两遍截图；`hand` 风格的字体在 `fonts/` 随 skill 走）。五条铁律：①出图失败**只警告**，绝不能当流程失败（Chrome 缺失是常态）；②HTML+字体副本只写 `.audio.asr`，输出目录只留 PNG；③解析 distilled.md 的列表必须同时兼容 `- ` 与 `1. `——同一条提示词两次蒸馏的输出格式都会变；④**说话人署名绝不显示 A/B/C/D 字母**——`_header_name()` 兼容 `A / Punk`、`A（Punk，…）`、`Punk（A）` 等多种格式并有全局映射兜底，动它之前先想清楚 LLM 还会换什么格式；**`card._dename()` 与 `distill._replace_bare_letters()` 的字母边界必须同时排掉英文与中文**（`(?<![A-Za-z\u4e00-\u9fff])`）并存中文分类负向断言（`(?![类组档种])`）——只排英文时，括号里的 `东B赛兰`（一个真实 IP 名）会被换成 `东胖姐赛兰`，`A类30岁` 会变成 `蜗牛类30岁`（两处都真实踩过）；⑤**每套风格模板必须自带高度测量 `<script>`**（把 scrollHeight 写进 `<title>`）——漏了会静默回退到固定高度把长图截断（踩过一次，四张全断在 2600px）。
-9. **对外文本产物不得出现说话人字母标签**：`audio.dialog.txt` / `audio.dialog.srt` / `distilled.md` 用真名（由 distilled.md 解析出 字母→真名 映射，映射存 `speaker_names.json`）；`labeled.json` / `turns.json` 保持原始字母（机器接口，不许改）。改名统一走 `distill.py apply_speaker_names()`（主流程在写完 distilled.md 后、出图之前调用；`--transcript-only` 无蒸馏稿不调用）。**必须有幂等性**：重复运行不破坏（标题改完后映射从 `speaker_names.json` 续用），任何异常只警告不中断主流程；解析不出名字的字母保留原字母。正文替换只认高置信结构（括号组指代、名词表 `—— A/C/D/F ——` 单元格、`A主张` 式句首归属），**金句引文原话绝不许改**。`--rename` 人名勘误时 `labeled.json` 的 **text 字段**随勘误订正（收听页逐字稿直接渲染它，不订正会与蒸馏栏名字打架），但 **speaker 字母标签仍绝不动**。
+9. **对外文本产物不得出现说话人字母标签**：`audio.dialog.txt` / `audio.dialog.srt` / `distilled.md` 用真名（由 distilled.md 解析出 字母→真名 映射，映射存 `speaker_names.json`）；`labeled.json` / `turns.json` 保持原始字母（机器接口，不许改）。改名统一走 `distill.py apply_speaker_names()`（主流程在写完 distilled.md 后、出图之前调用；`--transcript-only` 无蒸馏稿不调用）。**必须有幂等性**：重复运行不破坏（标题改完后映射从 `speaker_names.json` 续用），任何异常只警告不中断主流程；解析不出名字的字母保留原字母。正文替换只认高置信结构（括号组指代、名词表 `—— A/C/D/F ——` 单元格、`A主张` 式句首归属），**金句引文原话绝不许改**。`--rename` 人名勘误时 `labeled.json` 的 **text 字段**随勘误订正（收听页逐字稿直接渲染它，不订正会与蒸馏栏名字打架），但 **speaker 字母标签仍绝不动**。**`--rename "旧名=新名"` 是无词边界的字符串全局替换**（`distill.py` 对 `distilled.md` / `audio.dialog.txt` / `audio.dialog.srt` / `labeled.json` 的 text / `speaker_names.json` 的值各跑一遍 `str.replace`），不做人名识别——**执行前必须先在 `audio.txt`（原始转写）里 grep 旧名，确认它是写错的名字、而不是另一个真实参与者**。真实事故：据「胖姐是 punk 姐吧」直接跑了 `--rename "修身=Punk"`，但 47:47 主持人喊「看修身」、修身回「修身以赴…这个胖子姐你好」——修身是连麦提问者（字母 F），胖姐才是 Punk（字母 B），两个活人。整场里「修身」被替换成 Punk，md 人名表 / 三处对白 / labeled.json 的 text 全污染，只能重蒸馏补救。同理：用户说「X 是 Y」时应先定位 X 对应哪个**说话人字母**，再决定是改 `speaker_names.json` 映射还是做文本勘误，**不要直接推断成 `--rename X=Y`**；旧名像人名又像普通词的（`修身`/`上工`/`导乐`）尤其危险。勘误前先 `cp` 到 `out/<id>/.bak-<时间戳>/`。
 
 ## 已知但刻意不做的
 
