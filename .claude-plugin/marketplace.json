@@ -5,17 +5,18 @@
     "url": "https://github.com/eatmoreduck"
   },
   "metadata": {
-    "description": "Lightweight skills for turning recordings into writing: local speech-to-text, then X Spaces to distilled notes.",
+    "description": "Lightweight skills for turning content around: local speech-to-text, X Spaces to distilled notes, and drafts to listenable audio.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "yaya-skills",
-      "description": "Audio-to-content pipeline: local speech-to-text and X Space distillation.",
+      "description": "Content pipeline: local speech-to-text, X Space distillation, and text-to-audio corpus generation.",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/yaya-asr",
+        "./skills/yaya-corpus",
         "./skills/yaya-diarize",
         "./skills/yaya-xdl",
         "./skills/yaya-xspace"

@@ -79,6 +79,7 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 | [yaya-xdl](skills/yaya-xdl/) | X Space 链接 → audio.m4a（下载即归档） |
 | [yaya-asr](skills/yaya-asr/) | 任意音频/视频 → 带说话人的文字（转写∥分离自动并行） |
 | [yaya-diarize](skills/yaya-diarize/) | 音频 → 说话人时间线 turns.json（谁在何时说话） |
+| [yaya-corpus](skills/yaya-corpus/) | 讲解稿/口播稿（docx、PDF、纯文本）→ 校对翻译 → 可听语料：MP3 + 中英双语字幕 + 内嵌标签（yaya-asr 的镜像：文字进，音频出） |
 
 ## Roadmap
 

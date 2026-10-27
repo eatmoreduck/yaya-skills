@@ -81,6 +81,7 @@ Running locally also means: free, zero logins, no cloud accounts.
 | [yaya-xdl](skills/yaya-xdl/) | X Space link → audio.m4a (download = archive) |
 | [yaya-asr](skills/yaya-asr/) | Any audio/video → speaker-labeled text (transcribe ∥ separate, in parallel) |
 | [yaya-diarize](skills/yaya-diarize/) | Audio → speaker timeline turns.json (who spoke when) |
+| [yaya-corpus](skills/yaya-corpus/) | Narration scripts (docx, PDF, plain text) → proofread & translated → listenable material: MP3 + bilingual subtitles + embedded tags (the mirror of yaya-asr: text in, audio out) |
 
 ## Roadmap
 
