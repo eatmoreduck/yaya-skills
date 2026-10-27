@@ -77,6 +77,7 @@ def main():
 
     text = '\n'.join(lines) + '\n'
     if args.output:
+        os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)  # -o 父目录不存在时自动建
         open(args.output, 'w', encoding='utf-8').write(text)
         print(f'OK {len(lines)} 行 -> {args.output}')
     else:
