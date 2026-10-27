@@ -40,3 +40,6 @@ skills/*/out/
 
 # 本机浏览器调试产物（MCP 截图/日志），不进仓库
 .playwright-mcp/
+
+# serena MCP 工具自动生成的本机项目配置，不进仓库
+.serena/
