@@ -277,14 +277,18 @@ def _absorb_fragments(blocks: list, min_chars: int = 6, max_gap: float = 1.5) ->
 def build_labeled(tx: dict, turns: list[dict],
                   sent_gap: float = 0.8, comma_gap: float = 0.35) -> tuple[list[dict], dict]:
     """把词级转写按说话人分组，用停顿恢复标点。返回 (merged, stats)。"""
+    # 纯幻觉段必须在取词之前剔除：段级 _clean 能整段删掉它，但一旦进入 words
+    # 就会和相邻真实发言合并成一大块，_clean 看到剩余 ≥6 字就整段放行——
+    # dialog.txt/srt 因此长期漏出「请不吝点赞…明镜与点点栏目」（真实踩过的坑）。
+    clean_segs = [s for s in tx["segments"] if _clean(s.get("text", "")).strip()]
     words = []
-    for seg in tx["segments"]:
+    for seg in clean_segs:
         for w in seg.get("words") or []:
             if w["w"].strip():
                 words.append(w)
     if not words:  # 回退到段级（同样过滤空文本，空段会在标点恢复处触发 IndexError）
         words = [{"w": s["text"], "s": s["start"], "e": s["end"]}
-                 for s in tx["segments"] if s.get("text", "").strip()]
+                 for s in clean_segs if s.get("text", "").strip()]
     for w in words:
         w["sp"] = _speaker_at(w["s"], w["e"], turns)
 
