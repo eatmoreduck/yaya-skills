@@ -194,7 +194,12 @@ def _dename(text: str, lmap: dict[str, str]) -> str:
             name = lmap.get(lm.group(0), "")
             # 花名可能带备选（文字姐/蚊子姐）→ 图上取第一个
             return re.split(r"[+/、，,]", name)[0].strip() if name else lm.group(0)
-        return re.sub(r"(?<![A-Za-z])[A-Z](?![A-Za-z])", sub_letter, m.group(0))
+        # 前后边界都必须排掉中文：`Domby Seven（东B赛兰/多姆比Seven）` 里的 B 是名字
+        # 的一部分（东B赛兰是一个 IP 名），只排英文会把中文相邻的字母也换掉，把
+        # 「东B赛兰」改成「东胖姐赛兰」——真实事故。
+        # 后置还要排掉画像分类词：`（A类30岁）` 里的 A 指用户画像，换成真名就毁原意。
+        return re.sub(r"(?<![A-Za-z一-鿿])[A-Z](?![A-Za-z类组档种])",
+                      sub_letter, m.group(0))
     out = re.sub(r"[（(][^）)]{1,60}[）)]", sub_group, text)
     # 替换后可能出现 "Ringo/Ringo" 这类重复，去重
     return re.sub(r"([\u4e00-\u9fffA-Za-z0-9]{2,})/\1", r"\1", out)

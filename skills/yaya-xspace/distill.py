@@ -366,8 +366,23 @@ def _replace_bare_letters(text: str, mapping: dict[str, str]) -> str:
                       m.group(1))
     # 1) 表格单元格：字母序列（A、A/C、A/C/D/F）后面跟着 ` ——` 分隔
     text = re.sub(r"(?<![A-Za-z0-9])([A-Z](?:[/、+＋,，][A-Z])*)(?=\s*[—–])", sub, text)
-    # 2) 句首归属：句读/行首之后、紧贴中文的单字母（A主张 / H认为 / E也）
-    text = re.sub(r"(?<![A-Za-z0-9])([A-Z])(?=[\u4e00-\u9fff])", sub, text)
+    # 2) 句首归属：行首 / 句读 / 空白 之后、紧贴中文的单字母（A主张 / H认为 / E也）
+    #    前置边界必须排掉中文：否则「东B赛兰」里的 B 会被当成说话人 B 换成真名
+    #    （真实事故：原文 `东B赛兰` 被改成 `东胖姐赛兰`）。
+    #    后置也要排掉画像是「分类」的词：鸟哥讲矩阵时用 `A类30岁`、`B类20多岁`
+    #    指用户画像，换成 `蜗牛类30岁` 就把原意毁了。
+    text = re.sub(r"(?:(?<=^)|(?<=[\s。！？；：、，」「（）]))([A-Z])(?![类组档种])(?=[\u4e00-\u9fff])",
+                  sub, text, flags=re.M)
+    # 3) 字母紧跟同名真名的括号：`B（胖姐）` → `胖姐`（字母与真名并存，去掉字母）。
+    #    必须要求括号内容「恰好等于」该字母的真名——原文里 `A类30岁`、`B类20多岁`
+    #    是用户画像分类（鸟哥讲矩阵时大量使用），它们括号里没有真名，不会被误伤。
+    def sub_with_name(m: re.Match) -> str:
+        letter, inner = m.group(1), m.group(2).strip()
+        name = _name_of(mapping, letter) or ""
+        name = re.split(r"[+/、，,]", name)[0].strip()
+        return name if name and inner == name else m.group(0)
+    text = re.sub(r"(?<![A-Za-z0-9])([A-Z])\s*[（(]\s*([^）)]{1,40}?)\s*[）)]",
+                  sub_with_name, text)
     return text
 
 
