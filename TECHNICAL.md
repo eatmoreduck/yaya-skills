@@ -7,17 +7,20 @@
 
 ## 1. 架构
 
-### 1.1 四个 skill 与依赖
+### 1.1 五个 skill 与依赖
 
 ```
 skills/
 ├── yaya-xdl/       原子能力：X Space 链接 → audio.m4a（yt-dlp，下载即归档）
 ├── yaya-asr/       原子能力：音频 → 带说话人文字（转写 + 编排分离并行）
 ├── yaya-diarize/   原子能力：音频 → 说话人时间线 turns.json
+├── yaya-corpus/    原子能力：文字稿 → 可听语料（校验 → 清洗分段 → Kokoro TTS → MP3 + 双语字幕）
 └── yaya-xspace/    编排层：调 xdl → 调 asr → 合并 → 蒸馏 → 出图
 ```
 
 依赖单向：`yaya-xspace → yaya-xdl + yaya-asr`，`yaya-asr → yaya-diarize`。兄弟 skill 之间只通过各自的 `run.sh` 子进程调用、按相邻目录寻址，不共享代码。命名约定、新增 skill 三步骤见根 README。
+
+`yaya-corpus` 是 `yaya-asr` 的**反向镜像**——asr 把声音变成文字，corpus 把文字变成声音。两者**代码零依赖**（各有独立 `.venv` 与模型目录），只是概念上互补；正因为互不认识，一条从 Space 到语料到笔记的链路才能随时拆开单独用。
 
 ### 1.2 流水线与并行设计
 
@@ -65,6 +68,14 @@ audio.m4a ───────────────────────�
 - 出图字体：`skills/yaya-xspace/fonts/` 内置两款开源手写体（站酷庆科黄油体=标题、站酷快乐体=正文，均 OFL 许可随附 `OFL.txt`，**仅 `hand` 风格使用**；其余风格用系统宋体/黑体，可读性更好），渲染时拷到 HTML 同目录相对引用，不依赖系统字体。卡图首行品牌 = `eatmoreduck 多吃鸭 · yaya-skills`。
 - **说话人改名**：蒸馏后 `apply_speaker_names()` 从 distilled.md 解析 字母→真名 映射（复用 card.py 的 `_header_name()`，兼容 `A / Punk`、`A（Punk，…）`、`Punk（A）`、纯姓名等 LLM 惯用格式），把**对外文本产物**（dialog.txt / dialog.srt / distilled.md）里的字母标签换成真名——**对外永不出现 A/B/C/D**；映射落盘 `speaker_names.json`，供复查与幂等续跑。`labeled.json` / `turns.json` 是机器接口，**保持原始字母不变**。解析不出名字的字母保留原字母；改名失败只警告，绝不影响主流程。
 
+**yaya-corpus（文字 → 可听语料）**
+
+- **五段链路**：`extract`（docx/PDF/纯文本取文本）→ `decrypt`（PDF 文本层被字体子集混淆时先破密）→ 人工/LLM 校对翻译写 `plan.json` → `synth`（Kokoro 合成 MP3 + LRC/SRT）→ `tags`（USLT/SYLT 歌词 + APIC 封面 + 专辑/歌手写入 ID3v2.3）。
+- **`plan.json` 是唯一契约**：`segments[].paragraphs[]` 的每一条就是**一条字幕的时间粒度**（1-2 句、≤150 字符）；带 `zh` 字段时自动产出同名 `.lrc`（英文在上、中文在下、同一时间戳）与 `.srt`。段前停顿可逐条指定，纯字符串默认 0.6s。
+- **字幕时间轴按合成结果实测反推**，不按字数估算：合成一段就拿 `len(samples)/SR` 得到真实时长，累加停顿得到下一条起点——所以字幕和音频天然对齐，不会随语速漂移。
+- **TTS 模型 Kokoro-82M**（ONNX）：`kokoro-v1.0.onnx`（310MB）+ `voices-v1.0.bin`（27MB），首次运行从 GitHub Release 下载到 `skills/yaya-corpus/models/kokoro/`，**同样先下临时名 `.dl` 再原子改名**（半截文件不会冒充模型）。24kHz 单声道，lameenc 编码，默认 96kbps；每段写盘前做峰值归一化，多段音量一致。
+- **PDF 字体子集解密的原理**：这类 PDF 页面显示正常但复制/提取出来是 `!"#$"#%&`——生成器按**首次出现顺序**把第 k 个不同字符映射到 `0x21+k`。因此同一份文件内映射稳定，可以用词形（长度 + 重复模式）比对字典反推字母表。`crib.py` 做已知明文攻击（拿同文件内的干净标题当 crib），`final2.py` 生成多套候选映射、按解码后文本的语言模型分择优，`normalize.py` 逐类修补残留并输出 `*.suspect.txt`——**词典外词必须人工核**（专名属正常，年份/数字最容易错），脚本不替你下结论。只在确实检出密文时才套用修补表，干净文本走原样，避免 `The market,` 被误改成 `The marketo`。
+
 ### 1.4 数据布局
 
 数据跟着 skill 走（删 skill 目录=删数据；`git pull` 不动未跟踪的 `out/`）：
@@ -100,8 +111,9 @@ skills/yaya-xspace/out/<space-id>/
 | whisper-large-v3-turbo（MLX 版） | 语音转写 | ~1.5GB | `~/.cache/huggingface/`（全局共享） | HuggingFace |
 | sherpa-onnx-pyannote-segmentation-3-0 | 说话人切分 | 5.7MB | `skills/yaya-asr/models/` | GitHub Releases |
 | 3D-Speaker CAM++ 中文声纹 | 声纹提取 | 27MB | 同上 | GitHub Releases |
+| Kokoro-82M（`kokoro-v1.0.onnx` + `voices-v1.0.bin`） | 文字转语音（yaya-corpus） | 337MB | `skills/yaya-corpus/models/kokoro/` | GitHub Releases |
 
-全部**免 HF token**，首次运行自动下载。国内网络可 `export HF_ENDPOINT=https://hf-mirror.com`。
+全部**免 HF token**，首次运行自动下载。国内网络可 `export HF_ENDPOINT=https://hf-mirror.com`。Kokoro 与其余模型分属两个 venv，互不影响。
 
 ---
 

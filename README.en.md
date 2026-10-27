@@ -12,7 +12,7 @@ English | [简体中文](README.md)
 
 > **Wave 1: turn X Space audio into text.** You catch something great while driving or cooking and want to note it down — but your hands are busy. By the time you're free, all that's left is a vague impression, and the replay gets deleted after 30 days anyway. One link turns a two-hour Space into speaker-grouped notes with every quotable line preserved verbatim — **plus a ready-to-post share card**.
 
-**yaya-skills is a toolset that helps writers work faster.** Wave 1 is a **distiller for X Spaces** ([yaya-xspace](skills/yaya-xspace/)): it turns Spaces you had no time to listen to into ready-to-use notes, backed by three atomic skills for download / transcription / speaker separation. More tools for writers will follow. Audio never leaves your machine.
+**yaya-skills is a toolset that helps writers work faster.** Wave 1 is a **distiller for X Spaces** ([yaya-xspace](skills/yaya-xspace/)): it turns Spaces you had no time to listen to into ready-to-use notes, backed by three atomic skills for download / transcription / speaker separation. Wave 2 is its reverse — **scripts into listenable material** ([yaya-corpus](skills/yaya-corpus/)): turn a draft into audio with bilingual subtitles. More tools for writers will follow. Audio never leaves your machine.
 
 > Note: the distilled notes are written in Chinese (the pipeline is tuned for Chinese-language Spaces).
 
@@ -52,11 +52,12 @@ Four card styles are built in — switch with `--style` (click a name to open th
 
 **Layering rule: upper layers depend on lower ones, one direction only.**
 
-- **Atomic skills know nothing about each other**: `yaya-xdl` only downloads — a Space link in, `audio.m4a` out (download = archive); `yaya-asr` only transcribes — audio in, speaker-labeled text out; `yaya-diarize` only separates — audio in, a "who spoke when" timeline out. No business concepts in any of them.
+- **Atomic skills know nothing about each other**: `yaya-xdl` only downloads — a Space link in, `audio.m4a` out (download = archive); `yaya-asr` only transcribes — audio in, speaker-labeled text out; `yaya-diarize` only separates — audio in, a "who spoke when" timeline out; `yaya-corpus` only synthesizes — a script in, MP3 + bilingual subtitles out. No business concepts in any of them.
 - **`yaya-asr` is a pipeline inside**: transcription (MLX/GPU) spawns separation ([yaya-diarize](skills/yaya-diarize/), CPU) in a background process the moment it starts. Both run **in parallel** without contending for resources.
+- **`yaya-corpus` is the mirror image of `yaya-asr`**: one turns sound into text, the other turns text into sound. They share no code and each has its own environment — they complement each other conceptually only.
 - **`yaya-xspace` is the orchestrator**: it chains xdl and asr, then adds its own distillation step. Every stage is invoked through the sibling skill's `run.sh` — no duplicated implementation.
 
-The payoff of this split is straightforward: only want the audio archived? Use `yaya-xdl`. Only need speaker turns? `yaya-diarize`. Need a transcript? `yaya-asr`. Only the full X Space → notes flow needs `yaya-xspace`.
+The payoff of this split is straightforward: only want the audio archived? Use `yaya-xdl`. Only need speaker turns? `yaya-diarize`. Need a transcript? `yaya-asr`. Want a script turned into audio? `yaya-corpus`. Only the full X Space → notes flow needs `yaya-xspace`.
 
 > 📐 **Implementation details and measured performance** live in [TECHNICAL.md](TECHNICAL.md) (in Chinese): model list, caching, parallel design, per-stage timings (119-minute audio → a 29.3-minute run).
 
@@ -86,8 +87,9 @@ Running locally also means: free, zero logins, no cloud accounts.
 ## Roadmap
 
 - ✅ **Wave 1**: X Space → notes + share card (the pipeline above)
+- ✅ **Wave 2**: scripts → listenable material ([yaya-corpus](skills/yaya-corpus/): proofread/translate → MP3 + bilingual subtitles + embedded tags, the mirror of Wave 1)
 - 🔜 **Next**: web-first outputs & self-hosted archiving — each Space becomes an interactive page (click a segment, hear that moment), audio lands in your own storage; the 30-day replay expiry is no longer the end
-- 🔜 **Later**: more tools for writers (transcription/separation are atomic — podcasts, videos, or voice memos from any source can enter the same pipeline)
+- 🔜 **Later**: more tools for writers (transcription/separation/synthesis are atomic — podcasts, videos, voice memos, or drafts from any source can enter the same pipeline)
 
 ## Models (auto-downloaded on first run, nothing to prepare)
 
@@ -95,10 +97,11 @@ Running locally also means: free, zero logins, no cloud accounts.
 |---|---|---|---|---|
 | whisper-large-v3-turbo (MLX) | Transcription | **~1.5GB** | `~/.cache/huggingface/` (shared globally) | HuggingFace |
 | pyannote segmentation + CAM++ voiceprint | Speaker separation | ~33MB | `skills/yaya-asr/models/` (gitignored) | GitHub Releases |
+| Kokoro-82M (for yaya-corpus) | Text-to-speech | ~337MB | `skills/yaya-corpus/models/kokoro/` (gitignored) | GitHub Releases |
 
-- Both are **token-free**; they download on the first run of the corresponding skill and never again.
+- All are **token-free**; they download on the first run of the corresponding skill and never again.
 - Downloading Whisper requires access to HuggingFace. On unstable networks set a mirror first: `export HF_ENDPOINT=https://hf-mirror.com`.
-- Disk-sensitive? The 1.5GB transcription model is the big one; separation models are only 33MB.
+- Disk-sensitive? The 1.5GB transcription model is the big one; separation models are 33MB and Kokoro is ~337MB.
 
 ## Where your data lives (outputs & archives)
 
@@ -157,6 +160,12 @@ yaya-skills/
 │   │   └── SKILL.md / README.md / run.sh / xdl.py
 │   ├── yaya-diarize/        atomic (no deps)
 │   │   └── SKILL.md / README.md / run.sh / diarize.py
+│   ├── yaya-corpus/         atomic (no deps)
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── run.sh
+│   │   ├── scripts/         extract / decrypt / synthesize / subtitles / tags
+│   │   └── models/kokoro/   TTS model (gitignored, auto-downloaded)
 │   └── yaya-xspace/         scenario orchestrator (depends on yaya-xdl + yaya-asr)
 │       ├── SKILL.md
 │       ├── README.md

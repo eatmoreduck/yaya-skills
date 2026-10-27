@@ -12,7 +12,7 @@
 
 > **首期主打：X Space 录音转文字。** 开车、做饭时听到一段好内容，想记，手上忙着记不了；等忙完只剩个模糊印象，回放 30 天后还被平台直接删掉。一条链接，把一场两小时的 Space 变成按说话人分组、金句原话全保留的中文干货笔记，**外加一张可直接发出去的分享图**。
 
-**yaya-skills 是一套帮助写作者提高效率的工具集合**。第一期是 **X Space 蒸馏提纯器**（[yaya-xspace](skills/yaya-xspace/)）：把没时间听、或忘了听的 Space 提纯成能直接用的干货笔记，背后由下载 / 转写 / 分离三个原子 skill 支撑；后续会增加更多为写作者提效的工具。音频全程不出本机。
+**yaya-skills 是一套帮助写作者提高效率的工具集合**。第一期是 **X Space 蒸馏提纯器**（[yaya-xspace](skills/yaya-xspace/)）：把没时间听、或忘了听的 Space 提纯成能直接用的干货笔记，背后由下载 / 转写 / 分离三个原子 skill 支撑；第二期是它的反方向 **文字稿 → 可听语料**（[yaya-corpus](skills/yaya-corpus/)）：把稿子做成能听的音频和双语字幕。后续会增加更多为写作者提效的工具。音频全程不出本机。
 
 ## 快速开始（主打场景）
 
@@ -50,11 +50,12 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 
 **分层原则：上层依赖下层，依赖单向。**
 
-- **原子能力互不依赖**：`yaya-xdl` 只管下载——Space 链接进，audio.m4a 出（下载即归档）；`yaya-asr` 只管转写——音频进，带说话人的文字出；`yaya-diarize` 只管分离——音频进，"谁在何时说话"的时间线出。都不带业务概念。
+- **原子能力互不依赖**：`yaya-xdl` 只管下载——Space 链接进，audio.m4a 出（下载即归档）；`yaya-asr` 只管转写——音频进，带说话人的文字出；`yaya-diarize` 只管分离——音频进，"谁在何时说话"的时间线出；`yaya-corpus` 只管合成——文字稿进，MP3 + 双语字幕出。都不带业务概念。
 - **`yaya-asr` 内部是流水线**：转写（MLX/GPU）一开始就后台拉起分离（yaya-diarize，CPU），两者**并行执行**，互不争抢。
+- **`yaya-corpus` 是 `yaya-asr` 的反向镜像**：一个把声音变文字，一个把文字变声音。两者代码零依赖、各有独立环境，只是概念上互补。
 - **`yaya-xspace` 是场景编排**：把 xdl 和 asr 串起来，再加自己的蒸馏，产出干货笔记。每个环节只通过兄弟 skill 的 `run.sh` 调用，不重复实现。
 
-这样拆的好处很直接：只想存音频的用 `yaya-xdl`；只想分说话人的用 `yaya-diarize`；要文字稿的用 `yaya-asr`；只有 X Space 一条龙才需要 `yaya-xspace`。
+这样拆的好处很直接：只想存音频的用 `yaya-xdl`；只想分说话人的用 `yaya-diarize`；要文字稿的用 `yaya-asr`；要把稿子做成音频的用 `yaya-corpus`；只有 X Space 一条龙才需要 `yaya-xspace`。
 
 > 📐 **内部实现与性能实测**见 [TECHNICAL.md](TECHNICAL.md)：模型清单、缓存机制、并行设计、每阶段耗时（119 分钟音频 → 29.3 分钟出稿）。
 
@@ -84,8 +85,9 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 ## Roadmap
 
 - ✅ **第一波**：X Space → 干货笔记 + 分享图（上面这条流水线）
+- ✅ **第二波**：文字稿 → 可听语料（[yaya-corpus](skills/yaya-corpus/)：校对/翻译 → MP3 + 双语字幕 + 内嵌标签，与第一波互为镜像）
 - 🔜 **下一波**：产出网页化与自托管归档——蒸馏稿变可交互页面（点哪段听哪段），音频进自己的云端，X 回放 30 天删除不再是终点
-- 🔜 **后续**：更多帮写作者提效的工具（转写/分离是原子能力，任意渠道的播客、视频、语音都能进这条流水线）
+- 🔜 **后续**：更多帮写作者提效的工具（转写/分离/合成都是原子能力，任意渠道的播客、视频、语音、文稿都能进这条流水线）
 
 ## 模型（首次运行自动下载，无需手动准备）
 
@@ -93,6 +95,7 @@ bash skills/yaya-xspace/run.sh "https://x.com/i/spaces/<13位ID>"
 |---|---|---|---|---|
 | whisper-large-v3-turbo（MLX 版） | 语音转写 | **~1.5GB** | `~/.cache/huggingface/`（全局共享） | HuggingFace |
 | pyannote 分割 + CAM++ 中文声纹 | 说话人分离 | ~33MB | `skills/yaya-asr/models/`（已 gitignore） | GitHub Releases |
+| Kokoro-82M（yaya-corpus 用） | 文字转语音 | ~337MB | `skills/yaya-corpus/models/kokoro/`（已 gitignore） | GitHub Releases |
 
 - 两个模型都**免 HF token**，首次跑对应 skill 时自动下载，之后重跑不重复下载。
 - 下载 Whisper 需要能访问 HuggingFace；网络不稳可提前设镜像：`export HF_ENDPOINT=https://hf-mirror.com`。
@@ -156,6 +159,12 @@ yaya-skills/
 │   │   └── SKILL.md / README.md / run.sh / xdl.py
 │   ├── yaya-diarize/        原子能力（无依赖）
 │   │   └── SKILL.md / README.md / run.sh / diarize.py
+│   ├── yaya-corpus/         原子能力（无依赖）
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── run.sh
+│   │   ├── scripts/         取文本 / 解密 / 合成 / 字幕 / 标签
+│   │   └── models/kokoro/   TTS 模型（gitignore，首次运行自动下）
 │   └── yaya-xspace/         场景编排（依赖 yaya-xdl + yaya-asr）
 │       ├── SKILL.md
 │       ├── README.md
