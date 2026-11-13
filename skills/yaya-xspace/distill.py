@@ -543,9 +543,9 @@ def main() -> int:
         outdir = out_root / slugify(src.stem)
     else:
         url = arg
-        if re.fullmatch(r"[0-9a-zA-Z]{13}", url):
+        if re.fullmatch(r"[0-9a-zA-Z]{13,14}", url):
             url = f"https://x.com/i/spaces/{url}"
-        sid = (re.search(r"spaces/([0-9a-zA-Z]{13})", url) or [None, slugify(url)])[1]
+        sid = (re.search(r"spaces/([0-9a-zA-Z]{13,14})", url) or [None, slugify(url)])[1]
         meta = {}
         outdir = out_root / sid
 

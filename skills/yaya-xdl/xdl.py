@@ -24,6 +24,10 @@ import time
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent
+# yt-dlp 的 Space 正则硬编码 13 位，X 已出现 14 位 ID——经此包装放宽后再跑原 CLI
+# （上游修复发布后可删 ytdlp_runner.py 并改回直调）
+YTDLP_RUNNER = SKILL_DIR / "ytdlp_runner.py"
+_YTDLP_CMD = ["uvx", "--from", "yt-dlp", "python", str(YTDLP_RUNNER)]
 
 VIDEO_EXT = {".mp4", ".mkv", ".mov", ".avi", ".flv", ".webm"}
 AUDIO_EXT = {".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".wma"}
@@ -39,7 +43,7 @@ def log(msg: str) -> None:
 def probe_meta(url: str) -> dict:
     try:
         p = subprocess.run(
-            ["uvx", "yt-dlp", "--no-warnings", "--simulate",
+            [*_YTDLP_CMD, "--no-warnings", "--simulate",
              "--print", "%(title)s\t%(duration)s\t%(is_live)s\t%(timestamp)s", url],
             capture_output=True, text=True, timeout=180)
         parts = (p.stdout.strip().splitlines()[-1] if p.stdout.strip() else "").split("\t")
@@ -69,7 +73,7 @@ def download_audio(url: str, outdir: Path) -> Path:
 
     log("下载音频中（yt-dlp）…")
     p = subprocess.run(
-        ["uvx", "yt-dlp", "--no-warnings", "--newline", "-x",
+        [*_YTDLP_CMD, "--no-warnings", "--newline", "-x",
          "--audio-format", "m4a", "-o", str(outdir / "audio.dl.%(ext)s"), url],
         capture_output=True, text=True)
     done = [e for e in outdir.glob("audio.dl.*")
@@ -88,17 +92,17 @@ def download_audio(url: str, outdir: Path) -> Path:
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="yaya-xdl：X Space 音频下载（下载即归档）")
-    ap.add_argument("src", help="Space 链接或 13 位 ID")
+    ap.add_argument("src", help="Space 链接或 13/14 位 ID")
     ap.add_argument("-o", "--outdir", default=None,
                     help="输出目录（默认 skill 自己的 out/<space-id>/）")
     args = ap.parse_args()
 
     url = args.src.strip()
-    if re.fullmatch(r"[0-9a-zA-Z]{13}", url):
+    if re.fullmatch(r"[0-9a-zA-Z]{13,14}", url):
         url = f"https://x.com/i/spaces/{url}"
-    m = re.search(r"spaces/([0-9a-zA-Z]{13})", url)
+    m = re.search(r"spaces/([0-9a-zA-Z]{13,14})", url)
     if not m:
-        sys.exit(f"❌ 无法解析 13 位 Space ID：{args.src}")
+        sys.exit(f"❌ 无法解析 13/14 位 Space ID：{args.src}")
     sid = m.group(1)
 
     outdir = (Path(args.outdir).expanduser().resolve() if args.outdir
