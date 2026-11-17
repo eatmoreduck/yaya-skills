@@ -168,12 +168,13 @@ def _entry(outdir: Path, audio_url: str, ctype: str = "auto") -> dict:
 
 TYPE_LABEL = {"space": "SPACE", "interview": "INTERVIEW", "youtube": "YOUTUBE", "audio": "AUDIO"}
 
-# 视觉语言与主站 eatmoreduck.com 对齐：纯白底、黄 #FFD23F 马克笔高亮、
-# 衬线大标题、等宽字元信息、黄 offset 阴影卡片（主站提取，别再漂回瑞士红）
+# 视觉语言与主站 eatmoreduck.com 瑞士精密编辑风对齐：微暖纸白底、#FFD23F 鸭黄信号色、
+# 1060px 统一版心与家族式无框报头
 SITE_CSS = {
-    "bg": "#FFFFFF", "ink": "#111111", "accent": "#FFD23F",
+    "bg": "#FAF9F5", "surface": "#FFFFFF", "ink": "#141413",
+    "muted": "#727068", "hairline": "#CBC6B8", "accent": "#FFD23F",
     "serif": "'Serif Local','Noto Serif SC','Songti SC',serif",
-    "mono": "ui-monospace,'SF Mono',Menlo,Consolas,monospace",
+    "mono": "'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace",
 }
 
 
@@ -186,12 +187,12 @@ def _index_html(entries: list[dict]) -> str:
         return f"{h}h{rem // 60:02d}m" if h else f"{sec // 60}min"
     cards = ""
     # 倒序：按 Space 日期（date，回退发布日），新的在前
-    for it in sorted(entries, key=lambda x: (x.get("date") or x.get("published_at") or "",
-                                             x.get("published_at") or ""), reverse=True):
+    for idx, it in enumerate(sorted(entries, key=lambda x: (x.get("date") or x.get("published_at") or "",
+                                                            x.get("published_at") or ""), reverse=True), 1):
         t = it.get("type") or "audio"
         label = TYPE_LABEL.get(t, t.upper())
         summary = f'<p class="sum">{e(it["summary"])}</p>' if it.get("summary") else ""
-        meta_bits = [e(it.get("date") or it.get("published_at") or "")]
+        meta_bits = [f"{idx:02d}", e(it.get("date") or it.get("published_at") or "")]
         if it.get("duration_sec"):
             meta_bits.append(_fmt_dur(int(it["duration_sec"])))
         if it.get("n_spk"):
@@ -201,63 +202,90 @@ def _index_html(entries: list[dict]) -> str:
         cards += (f'<a class="card" data-type="{e(t)}" href="{e(it["path"])}/">'
                   f'<div class="row1"><h3>{e(it["title"])}</h3>'
                   f'<span class="badge">{e(label)}</span></div>'
-                  f'<div class="meta"><span class="dt"></span>{" · ".join(meta_bits)}</div>'
+                  f'<div class="meta"><span class="dt"></span>{" · ".join(meta_bits)}'
+                  f'<span class="go">收听原声 ↗</span></div>'
                   f'{summary}</a>')
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+    return f"""<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="/site-favicon.svg">
-<title>eatmoreduck · audio assets</title>
+<title>鸭鸭留声 · eatmoreduck 多吃鸭</title>
 <style>
-:root{{--bg:{c['bg']};--ink:{c['ink']};--accent:{c['accent']}}}
+@font-face{{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;
+ src:url("/site-jbmono-400.woff2") format("woff2")}}
+@font-face{{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;
+ src:url("/site-jbmono-500.woff2") format("woff2")}}
+:root{{--bg:{c['bg']};--surface:{c['surface']};--ink:{c['ink']};--muted:{c['muted']};
+ --hairline:{c['hairline']};--accent:{c['accent']};--ease-out:cubic-bezier(.16,1,.3,1)}}
 *{{margin:0;padding:0;box-sizing:border-box}}
-body{{background:var(--bg);color:var(--ink);
- font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif}}
-.wrap{{max-width:880px;margin:0 auto;padding:34px 20px 60px}}
-/* 报头：brand + 横线，同主站 masthead */
-.mast{{display:flex;justify-content:space-between;align-items:center;
+body{{background:var(--bg);color:var(--ink);line-height:1.78;
+ font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
+ -webkit-font-smoothing:antialiased}}
+::selection{{background:var(--accent);color:var(--ink)}}
+.wrap{{max-width:1060px;margin:0 auto;padding:28px 28px 60px}}
+@media (max-width:760px){{.wrap{{padding:22px 20px 48px}}}}
+/* 家族统一报头：与主站 www.eatmoreduck.com 像素级对齐 */
+.mast{{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 18px;
  border-bottom:1.5px solid var(--ink);padding-bottom:14px;
- font-family:{c['mono']};font-size:14px}}
-.mast .brand{{font-weight:700}}
-.mast .brand .dt{{display:inline-block;width:10px;height:10px;border-radius:50%;
- background:var(--accent);border:1.5px solid var(--ink);margin-right:8px;vertical-align:-1px}}
-.mast a{{color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);padding:2px 10px}}
-.mast a:hover{{background:var(--accent)}}
-.mast-links{{display:flex;gap:10px}}
-h1{{font-family:{c['serif']};font-weight:900;font-size:clamp(30px,5vw,44px);
- line-height:1.25;margin:44px 0 10px}}
-h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%);padding:0 2px}}
-.sub{{font-family:{c['mono']};font-size:13.5px;color:#555;margin-bottom:22px}}
-#filters{{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}}
-#filters .f{{border:1.5px solid var(--ink);background:#fff;border-radius:0;
- padding:4px 16px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;
- font-family:{c['mono']}}}
-#filters .f.on{{background:var(--ink);color:var(--accent)}}
-.card{{display:block;background:#fff;border:1.5px solid var(--ink);
- padding:20px 24px;margin-bottom:18px;text-decoration:none;color:inherit;
- box-shadow:6px 6px 0 var(--accent);transition:transform .08s,box-shadow .08s}}
-.card:hover{{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--accent)}}
+ font-family:{c['mono']};font-size:12.5px}}
+.mast .brand{{display:inline-flex;align-items:center;gap:8px;font-weight:500;
+ color:var(--ink);text-decoration:none;letter-spacing:-.01em}}
+.mast .brand img{{display:block;flex:none}}
+.mast .brand-sep{{color:var(--muted);margin:0 2px}}
+.mast .brand-zh{{font-style:normal;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC',sans-serif;
+ font-weight:600;font-size:13px}}
+.mast-links{{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-left:auto}}
+.mast-links a{{color:var(--muted);text-decoration:none;padding:1px 0;transition:color .18s ease}}
+.mast-links a:hover{{color:var(--ink);
+ background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 96%,transparent 96%)}}
+.hero{{padding:34px 0 22px}}
+.kicker{{display:inline-flex;align-items:center;gap:8px;font-family:{c['mono']};
+ font-size:11.5px;color:var(--muted);letter-spacing:.06em;margin-bottom:10px}}
+.kicker-sq{{width:8px;height:8px;background:var(--accent);border:1.5px solid var(--ink)}}
+h1{{font-family:{c['serif']};font-weight:900;font-size:clamp(32px,4.8vw,48px);
+ line-height:1.2;margin:0 0 10px}}
+h1 .hl{{background:linear-gradient(transparent 58%,var(--accent) 58%,var(--accent) 94%,transparent 94%);padding:0 3px}}
+.sub{{font-family:{c['mono']};font-size:13px;color:var(--muted)}}
+#filters{{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 22px}}
+#filters .f{{border:1px solid var(--hairline);background:var(--surface);color:var(--ink);
+ padding:5px 14px;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.05em;
+ font-family:{c['mono']};transition:background .18s ease,border-color .18s ease}}
+#filters .f:hover{{border-color:var(--ink);background:#FFF5CE}}
+#filters .f.on{{background:var(--ink);color:var(--accent);border-color:var(--ink)}}
+.card{{position:relative;display:block;background:var(--surface);border:1px solid var(--hairline);
+ padding:20px 24px 18px;margin-bottom:14px;text-decoration:none;color:inherit;
+ transition:transform .24s var(--ease-out),border-color .24s var(--ease-out),box-shadow .24s var(--ease-out)}}
+.card::before{{content:"";position:absolute;top:-1px;left:-1px;right:-1px;height:3px;
+ background:var(--accent);transform:scaleX(0);transform-origin:left center;transition:transform .3s var(--ease-out)}}
+.card:hover{{transform:translateY(-2px);border-color:var(--ink);box-shadow:0 12px 28px -10px rgba(20,20,19,.1)}}
+.card:hover::before{{transform:scaleX(1)}}
 .card[hidden]{{display:none}}
-.row1{{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}}
-.card h3{{font-family:{c['serif']};font-size:21px;font-weight:900;line-height:1.45}}
-.badge{{flex:none;background:var(--accent);border:1.5px solid var(--ink);
- padding:2px 10px;font-size:10.5px;font-weight:800;letter-spacing:1.5px;
+.row1{{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}}
+.card h3{{font-family:{c['serif']};font-size:20px;font-weight:900;line-height:1.42}}
+.card:hover h3{{background:linear-gradient(transparent 66%,var(--accent) 66%,var(--accent) 96%,transparent 96%);display:inline}}
+.badge{{flex:none;background:#FFF5CE;border:1px solid rgba(20,20,19,.24);
+ padding:2px 9px;font-size:10.5px;font-weight:500;letter-spacing:.06em;
  font-family:{c['mono']}}}
-.card .meta{{font-family:{c['mono']};font-size:12px;color:#555;margin-top:8px;
+.card:hover .badge{{background:var(--accent);border-color:var(--ink)}}
+.card .meta{{font-family:{c['mono']};font-size:12px;color:var(--muted);margin-top:9px;
  display:flex;align-items:center;gap:7px;flex-wrap:wrap}}
-.card .dt{{width:9px;height:9px;border-radius:50%;background:var(--accent);
- border:1.5px solid var(--ink);flex:none}}
-.card .sum{{font-size:14px;opacity:.82;margin-top:10px;line-height:1.8}}
-.foot{{margin-top:34px;border-top:1.5px solid var(--ink);padding-top:14px;
- font-family:{c['mono']};font-size:12px;color:#555;
+.card .dt{{width:7px;height:7px;border-radius:50%;background:#15803D;flex:none}}
+.card .go{{margin-left:auto;color:var(--ink);font-weight:500}}
+.card .sum{{font-size:14px;color:#3A3935;margin-top:10px;line-height:1.78}}
+.foot{{margin-top:40px;border-top:1px solid var(--hairline);padding-top:18px;
+ font-family:{c['mono']};font-size:12px;color:var(--muted);
  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}}
-.foot a{{color:var(--ink)}}
+.foot a{{color:var(--ink);text-decoration:none}}
+.foot a:hover{{background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 96%,transparent 96%)}}
 </style></head><body><div class="wrap">
-<div class="mast"><a class="brand" href="/"><img src="/site-favicon.svg" alt="eatmoreduck" width="18" height="18">eatmoreduck · audio</a><span class="mast-links"><a class="gh" href="https://www.eatmoreduck.com/" target="_blank" rel="noopener">主站 ↗</a><a class="gh" href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></span></div>
+<header><nav class="mast"><a class="brand" href="/"><img src="/site-favicon.svg" alt="eatmoreduck" width="20" height="20"><span>eatmoreduck <span class="brand-sep">/</span> <em class="brand-zh">鸭鸭留声</em></span></a><span class="mast-links"><a href="https://www.eatmoreduck.com/#contact" target="_blank" rel="noopener">公众号 ↗</a><a href="https://www.eatmoreduck.com/" target="_blank" rel="noopener">主站 ↗</a><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">GitHub ↗</a></span></nav></header>
+<div class="hero">
+<div class="kicker"><span class="kicker-sq"></span>AUDIO ARCHIVE // YAYA-SKILLS</div>
 <h1>把值得听的，<span class="hl">沉淀成资产</span>。</h1>
-<p class="sub">语音内容 → 要点 + 原声，点哪段听哪段。平台回放会过期，这里长期在。</p>
+<p class="sub">语音内容 → 结论要点 + 原声归档，点哪段听哪段。平台回放会过期，这里长期在。</p>
+</div>
 <div id="filters"></div>
 {cards}
-<div class="foot"><span>由 yaya-skills 本地蒸馏生成 · 托管于 Cloudflare</span><span>yaya-skills · MIT</span></div>
+<div class="foot"><span>© 2026 <a href="https://www.eatmoreduck.com/">eatmoreduck 多吃鸭</a> · 由 yaya-skills 本地蒸馏生成</span><span><a href="https://github.com/eatmoreduck/yaya-skills" target="_blank" rel="noopener">yaya-skills · MIT ↗</a></span></div>
 </div>
 <script>
 const cards = [...document.querySelectorAll('.card')];

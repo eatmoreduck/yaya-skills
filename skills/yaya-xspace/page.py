@@ -25,9 +25,9 @@ from pathlib import Path
 import card  # 同目录模块：复用 parse_distilled / esc
 
 SKILL_DIR = Path(__file__).resolve().parent
-# 视觉语言与主站 eatmoreduck.com 对齐：纯白底、马克笔黄强调、衬线大标题
+# 视觉语言与主站 eatmoreduck.com 瑞士精密编辑风对齐：微暖纸白底、鸭黄强调、衬线大标题
 ACCENT = "#FFD23F"
-BG = "#FFFFFF"
+BG = "#FAF9F5"
 # 说话人色点轮转（克制、和谐、白底可辨）
 DOTS = ("#E02B20", "#1F5FA8", "#1E7A46", "#B0680A", "#7A3E9D",
         "#0F7B8A", "#A8385A", "#5B5BD6", "#4E6E00", "#8A5A2B")
@@ -114,58 +114,59 @@ def _distill_html(d: dict) -> str:
     return "\n".join(parts)
 
 
-_TMPL = """<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+_TMPL = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>[[TITLE]] · eatmoreduck 收听页</title>
+<title>[[TITLE]] · 鸭鸭留声</title>
 [[FAVICON]]
 <style>
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;
- src:url("/jbmono-400.woff2") format("woff2")}
+ src:url("/site-jbmono-400.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;
- src:url("/jbmono-500.woff2") format("woff2")}
+ src:url("/site-jbmono-500.woff2") format("woff2")}
 </style>
 <style>
-:root{--bg:[[BG]];--ink:#111111;--accent:[[ACCENT]];--line:#111111;--card:#FFFFFF}
+:root{--bg:[[BG]];--ink:#141413;--muted:#727068;--accent:[[ACCENT]];--line:#141413;--hairline:#CBC6B8;--card:#FFFFFF}
 *{margin:0;padding:0;box-sizing:border-box}
 html{background:var(--bg)}
-body{font-family:-apple-system,'system-ui','PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
- color:var(--ink);line-height:1.7}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
+ color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
 /* ── 吸顶播放条 ── */
 #bar{position:sticky;top:0;z-index:9;background:var(--bg);
- padding:10px max(18px,calc((100% - 1060px)/2 + 18px));
+ padding:10px max(28px,calc((100% - 1060px)/2 + 28px));
  display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-#bar::after{content:"";position:absolute;left:max(18px,calc((100% - 1060px)/2 + 18px));
- right:max(18px,calc((100% - 1060px)/2 + 18px));bottom:0;height:1.5px;background:var(--line)}
-#bar .btn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);
- background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
+#bar::after{content:"";position:absolute;left:max(28px,calc((100% - 1060px)/2 + 28px));
+ right:max(28px,calc((100% - 1060px)/2 + 28px));bottom:0;height:1.5px;background:var(--line)}
+#bar .btn{flex:none;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);
+ background:var(--accent);color:var(--ink);font-size:17px;cursor:pointer}
 #bar .btn:active{transform:scale(.94)}
 #prog{flex:1 1 200px;accent-color:var(--ink);height:6px;cursor:pointer}
-#tm{font-variant-numeric:tabular-nums;font-size:13px;opacity:.75;white-space:nowrap;
+#tm{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted);white-space:nowrap;
  font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
-#rate{border:1.5px solid var(--line);background:#fff;border-radius:0;
- padding:3px 12px;font-size:13px;font-weight:700;cursor:pointer;
+#rate{border:1px solid var(--line);background:#fff;border-radius:0;
+ padding:3px 11px;font-size:12.5px;font-weight:500;cursor:pointer;
  font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 #rate:hover{background:var(--accent)}
 /* ── 头部 ── */
-header{padding:34px 18px 10px;max-width:1060px;margin:0 auto}
-header .kicker{font-size:13px;font-weight:700;letter-spacing:2px;opacity:.6;
+header{padding:32px 28px 10px;max-width:1060px;margin:0 auto}
+header .kicker{font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--muted);
  font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
 header h1{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
- font-size:clamp(24px,4vw,40px);line-height:1.35;font-weight:900;margin:8px 0 12px}
-header .src a{color:var(--ink);font-size:14px;text-decoration:underline;
- text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:3px}
+ font-size:clamp(24px,4vw,38px);line-height:1.35;font-weight:900;margin:8px 0 12px}
+header .src a{color:var(--ink);font-size:13.5px;text-decoration:underline;
+ text-decoration-color:var(--accent);text-decoration-thickness:2.5px;text-underline-offset:3px}
 .stats{font-family:"JetBrains Mono",'SF Mono',Menlo,monospace;
- display:flex;gap:20px;flex-wrap:wrap;font-size:14px;opacity:.72;margin-top:10px}
-.stats b{font-variant-numeric:tabular-nums}
+ display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.stats b{font-variant-numeric:tabular-nums;color:var(--ink)}
 /* ── 主体双栏 ── */
-main{max-width:1060px;margin:18px auto 60px;padding:0 18px;
+main{max-width:1060px;margin:18px auto 60px;padding:0 28px;
  display:grid;grid-template-columns:minmax(320px,5fr) 7fr;gap:26px;align-items:start}
 @media (max-width:960px){main{grid-template-columns:1fr}}
-/* 蒸馏栏 */
+/* 蒸馏栏：瑞士编辑双层装帧卡片 */
 #dnotes{position:sticky;top:78px;background:var(--card);border:1.5px solid var(--line);
- padding:22px 24px;box-shadow:6px 6px 0 var(--accent);
+ padding:22px 24px;box-shadow:0 12px 30px -12px rgba(20,20,19,.08);
  max-height:calc(100vh - 98px);overflow-y:auto;overscroll-behavior:contain}
-@media (max-width:960px){#dnotes{position:static;max-height:none;overflow:visible}}
+#dnotes::before{content:"";position:absolute;top:0;left:0;right:0;height:3.5px;background:var(--accent)}
+@media (max-width:960px){#dnotes{position:relative;top:auto;max-height:none;overflow:visible}}
 #dnotes h2{font-family:'Serif Local','Noto Serif SC','Songti SC',serif;
  font-size:17px;font-weight:900;border-bottom:1.5px solid var(--line);
  padding-bottom:8px;margin-bottom:14px}
@@ -206,24 +207,29 @@ main{max-width:1060px;margin:18px auto 60px;padding:0 18px;
 .seg.now .t{opacity:1;font-weight:800}
 body.hide .seg{opacity:.18}
 body.hide .seg.hit{opacity:1}
-footer{max-width:1060px;margin:0 auto;padding:0 18px 40px;font-size:12.5px;opacity:.55;
- font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
-/* ── 报头（线上版才有）：主站同款鸭子 logo + 返回资产库 ── */
-/* mast 与 #bar 的左右边距对齐正文 1060px 版心（宽屏时扩展到版心边缘） */
-.mast{display:flex;justify-content:space-between;align-items:center;position:relative;
- padding:14px max(18px,calc((100% - 1060px)/2 + 18px)) 13px;
+footer{max-width:1060px;margin:0 auto;padding:18px 28px 40px;font-size:12px;color:var(--muted);
+ border-top:1px solid var(--hairline);font-family:"JetBrains Mono",'SF Mono',Menlo,monospace}
+/* ── 家族统一报头（线上版）：与主站 www.eatmoreduck.com 像素级一致 ── */
+.mast-wrap{max-width:1060px;margin:0 auto;padding:28px 28px 0}
+.mast{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 18px;
+ padding-bottom:14px;border-bottom:1.5px solid var(--line);
  font-family:"JetBrains Mono",'SF Mono',Menlo,monospace;font-size:12.5px}
-.mast::after{content:"";position:absolute;left:max(18px,calc((100% - 1060px)/2 + 18px));
- right:max(18px,calc((100% - 1060px)/2 + 18px));bottom:0;height:1.5px;background:var(--line)}
-/* 主站 mast-nav 同语言：brand 无框、链接无框灰字、hover 黄色马克笔 */
-.mast .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink);
- border:none;background:none;padding:0}
-.mast img{display:block}
-.mast .gh{color:var(--muted);border:none;background:none;padding:0;cursor:pointer;
- font-family:inherit;font-size:inherit}
+.mast .brand{display:inline-flex;align-items:center;gap:8px;font-weight:500;color:var(--ink);
+ border:none;background:none;padding:0;text-decoration:none;letter-spacing:-.01em}
+.mast .brand-sep{color:var(--muted);margin:0 2px}
+.mast .brand-zh{font-style:normal;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC',sans-serif;
+ font-weight:600;font-size:13px}
+.mast img{display:block;flex:none}
+.mast .gh{color:var(--muted);border:none;background:none;padding:1px 0;cursor:pointer;
+ font-family:inherit;font-size:inherit;text-decoration:none;transition:color .18s ease}
 .mast .gh:hover{color:var(--ink);
  background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 96%,transparent 96%)}
-.mast-links{display:flex;gap:22px;align-items:baseline}
+.mast-links{display:flex;gap:8px 20px;align-items:center;flex-wrap:wrap;margin-left:auto}
+@media (max-width:760px){
+ #bar{padding:10px 20px}#bar::after{left:20px;right:20px}
+ header{padding:26px 20px 8px}main{padding:0 20px}footer{padding:16px 20px 36px}
+ .mast-wrap{padding:22px 20px 0}
+}
 </style></head><body>
 [[MASTHEAD]]
 <div id="bar">
@@ -401,16 +407,19 @@ def build(outdir: Path, audio_url: str = "audio.m4a", write: bool = True,
     }, ensure_ascii=False, separators=(",", ":"))
 
     # 线上版报头与 favicon（本地版留空，绝对路径只在域名根下有效）
-    mast_html = ('<div class="mast">'
-                 '<a class="brand" href="https://www.eatmoreduck.com/"><img src="/site-favicon.svg" alt="" '
-                 'width="18" height="18">eatmoreduck · audio</a>'
+    mast_html = ('<div class="mast-wrap"><nav class="mast">'
+                 '<a class="brand" href="/"><img src="/site-favicon.svg" alt="" '
+                 'width="20" height="20"><span>eatmoreduck <span class="brand-sep">/</span> '
+                 '<em class="brand-zh">鸭鸭留声</em></span></a>'
                  '<span class="mast-links">'
                  '<button class="gh share" id="share" type="button">分享</button>'
-                 '<a class="gh" href="/">资产库</a>'
+                 '<a class="gh" href="/">← 全部回放</a>'
+                 '<a class="gh" href="https://www.eatmoreduck.com/#contact" '
+                 'target="_blank" rel="noopener">公众号 ↗</a>'
                  '<a class="gh" href="https://www.eatmoreduck.com/" '
                  'target="_blank" rel="noopener">主站 ↗</a>'
                  '<a class="gh" href="https://github.com/eatmoreduck/yaya-skills" '
-                 'target="_blank" rel="noopener">GitHub ↗</a></span></div>') if mast else ""
+                 'target="_blank" rel="noopener">GitHub ↗</a></span></nav></div>') if mast else ""
     favicon_html = ('<link rel="icon" type="image/svg+xml" href="/site-favicon.svg">'
                     if mast else "")
 
