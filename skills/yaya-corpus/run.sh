@@ -5,6 +5,7 @@
 #   ./run.sh decrypt <a.pdf | 目录> [-o 输出目录]
 #   ./run.sh synth   <plan.json> [--voice af_heart] [--speed 1.0] [--bit-rate 96]
 #   ./run.sh tags    <输出目录> [--cover 封面.jpg] [--album 专辑名] [--artist 歌手]
+#   ./run.sh ncm     <MP3目录> --playlist <歌单ID> [--album 专辑名] [--artist 歌手]  网易云云盘上传+入歌单
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -14,6 +15,8 @@ usage() {
 
 子命令:
   extract  <docx|pdf|txt> [-o 输出.txt] [--headings]   抽纯文本（默认带英文清洗）
+  ncm      <MP3目录> --playlist <歌单ID> [--album A] [--artist AR]
+           上传网易云云盘并加入歌单（需先 ego-browser 导出 cookie，见 SKILL.md）
   decrypt  <pdf | 目录>   [-o 输出目录]                破解 PDF 字体子集混淆
   synth    <plan.json>    [--voice V] [--speed S]      合成 MP3 + LRC/SRT
   tags     <目录>         [--album A] [--artist AR]    写入歌词/封面/ID3 标签
@@ -35,7 +38,7 @@ CMD="$1"; shift
 
 case "$CMD" in
   -h|--help|help) usage; exit 0 ;;
-  extract|decrypt|synth|tags) ;;
+  extract|decrypt|synth|tags|ncm) ;;
   *) echo "❌ 未知子命令: $CMD" >&2; usage; exit 1 ;;
 esac
 
@@ -68,4 +71,10 @@ case "$CMD" in
           exec .venv/bin/python scripts/synth_kokoro.py --plan "$PLAN" "$@" ;;
     esac ;;
   tags)    exec .venv/bin/python scripts/embed_tags.py "$@" ;;
+  ncm)
+    if ! command -v node >/dev/null; then
+      echo "❌ 需要 node >= 18（网易云上传用）" >&2; exit 1
+    fi
+    DIR_NCM="$1"; shift
+    exec node scripts/ncm_upload.mjs --dir "$DIR_NCM" "$@" ;;
 esac

@@ -1,7 +1,7 @@
 ---
 name: yaya-corpus
-description: Turns rough drafts into listenable study material — proofreads English narration scripts (or translates a Chinese broadcast script into conversational English with the user's sign-off), cleans and segments the text, then synthesizes MP3 entirely offline with Kokoro-82M, plus bilingual LRC/SRT subtitles and embedded ID3 lyrics and cover art ready for upload. Input can be docx, PDF, or plain text; a PDF whose text layer is font-subset-scrambled can be decoded first. Use when the user says "做语料", "把稿子做成 MP3", "转成音频", "生成精听素材", "校对这篇稿子", "翻译口播稿", "加双语字幕", or wants audio files for a listening or podcast platform. The mirror of yaya-asr: text in, audio out.
-version: 0.1.0
+description: Turns rough drafts into listenable study material — proofreads English narration scripts (or translates a Chinese broadcast script into conversational English with the user's sign-off), cleans and segments the text, then synthesizes MP3 entirely offline with Kokoro-82M, plus bilingual LRC/SRT subtitles and embedded ID3 lyrics and cover art, then optionally publishes the batch fully-automatically to the NetEase Cloud Music cloud drive and a playlist (OAuth-free, scan-QR once). Use when the user says "做语料" as well as "传网易云", "上传云盘", "发到歌单". Input can be docx, PDF, or plain text; a PDF whose text layer is font-subset-scrambled can be decoded first. Use when the user says "做语料", "把稿子做成 MP3", "转成音频", "生成精听素材", "校对这篇稿子", "翻译口播稿", "加双语字幕", or wants audio files for a listening or podcast platform. The mirror of yaya-asr: text in, audio out.
+version: 0.2.0
 metadata:
   openclaw:
     homepage: https://github.com/eatmoreduck/yaya-skills#yaya-corpus
@@ -162,6 +162,46 @@ bash {baseDir}/run.sh tags <输出目录> --cover 封面.jpg --album "专辑名"
 
 **`normalize.py` 的 `FIX` 表只在检测到密文（`方案 != plain`）时才套用。** 它是针对特定 PDF 的个案修补，含 `'t,'→'to,'` 这类短键——无条件全局替换会把 `The market,` 改成 `The marketo`（真实踩过的坑）。干净文本一律跳过。
 
+
+## 发布分发（第四阶段：产物上传）
+
+语料合成完只是半成品，最后一步是把它们送到能听的地方。两条渠道按用途选：
+
+### 渠道 A：网易云音乐云盘（私人随身听）
+
+全自动，无需手点。前提：本机装有 ego-browser（ego lite）与 node ≥18。
+
+1. **扫码登录**：`ego-browser nodejs` 打开 `https://music.163.com/#/login`，出二维码截图给用户，用户用网易云 App 扫码（此步必须本人）。后台轮询「登录弹窗消失」判定成功——**不能用页面含「我的音乐」判断**，导航栏本来就这词，会误报。
+2. **导出 cookie**：`ego-browser nodejs < scripts/ncm_cookie_export.mjs`（写死输出 `/tmp/ncm/cookie.txt`，`NCM_COOKIE_OUT` 可改）。cookie 含 `MUSIC_U`/`__csrf`，有效期较长，过期重扫即可。
+3. **批量上传+入歌单**（前台跑，**后台任务会被沙箱断网**）：
+
+```bash
+node scripts/ncm_upload.mjs --dir <MP3目录> --playlist <歌单ID> \
+  --album "专辑名" --artist "歌手名"
+```
+
+歌单 ID 从 `https://music.163.com/api/user/playlist?uid=<用户ID>&limit=100` 拿（浏览器页内 fetch 即可，无需加密）。
+
+**踩坑记录（改脚本前必读）：**
+
+- **weapi 加密**：双层 AES-128-CBC（`0CoJUm6Qyw8W8jud` 预置 key → 随机 16 位 key）+ RSA no-padding（`m^65537 mod n`，BigInt 实现即可）。参考实现（NeteaseCloudMusicApi 系）的响应都包一层 `body`，**直调时字段在顶层**：`check.songId`、`alloc.result.*`、`info.songId`——照抄参考代码会把 `body.` 一起带上然后 undefined。
+- **NOS 上传节点**：`wanproxy.127.net/lbs` 在本机代理（fake-IP 模式）下 TLS 直接断连，浏览器内也拿不到（CORS）。节点地址由 lbs 下发，实际是 `http://nosup-jd1.127.net`（HTTP 不是 HTTPS，用 https 会 400「URL格式非法」）。拼法：`POST http://nosup-jd1.127.net/${bucket}/${objectKey}?offset=0&complete=true&version=1.0`，objectKey **不转义**，header 带 `x-nos-token` + `Content-MD5`（hex 大写）+ `Content-Type: audio/mpeg`。
+- **加歌单**：`/weapi/playlist/manipulate/tracks` 的 `trackIds` 是**纯字符串数组** `["346...",...]` 加 `imme:'true'`；`[{id:...}]` 对象数组会报「传入的歌曲ID错误」（字符串/数字都不行）。code 512 时把数组翻倍重发。
+- **云盘机制限制**：封面/歌词无法通过 API 写入云盘条目（`lyric:0/cover:0`），PC 客户端手动编辑也只对歌名等基本信息生效。内嵌在 MP3 里的歌词封面本地播放有效。标题/歌手/专辑在上传时通过 `info/v2` 写入，云盘正常显示。
+- 上传后云盘列表接口是 `/weapi/cloud/get`（`/weapi/cloud` 已 404）。
+
+### 渠道 B：每日英语听力（公共/精听）
+
+官方用户上传后台：**`https://my.eudic.net/ting/index`**（欧路账号登录，仅网页端，App 不能传）。
+
+- 上传 MP3（单文件 ≤70MB），填标题、选频道（可建「<账号名>的频道」，能设「仅自己可见」）
+- **字幕格式与我们的产物严丝合缝**：「一行英文、一行中文为一段，段落间空行」——把 `.lrc` 去掉时间戳拼起来就是现成文本；带时间轴的字幕也可直接贴，无需勾选「制作同步高亮字幕」
+- 也可勾选「生成 AI 字幕」（VIP 专享）让平台自动打轴，但自带字幕更准
+- 传完在 App「我听」→「我的上传」收听，支持倍速、单句精听、跟读评分、词典联动查词——**正好补上「MP3 不能变速、不能逐句精听」的短板**
+- 尚未自动化，计划用 ego-browser 走网页表单（选文件 + 填表 + 贴字幕），可行性已确认，待实测
+
+**选渠道的口径**：私人随身听/当播客 → 网易云；要精听/跟读/词级学习或想公开分享 → 每日英语听力。
+
 ## 环境要求
 
 | 组件 | 用途 | 来源 |
@@ -178,7 +218,7 @@ bash {baseDir}/run.sh tags <输出目录> --cover 封面.jpg --album "专辑名"
 
 - **镜像**：`yaya-asr`（文字 ← 声音）；本 skill 是反方向（声音 ← 文字）
 - **不依赖任何兄弟 skill**，可独立使用
-- 产物可直接上传「每日英语听力」等平台；也可作为播客/有声书素材
+- 产物发布：网易云云盘（全自动，见「发布分发」渠道 A）；每日英语听力 my.eudic.net（渠道 B，字幕格式直接兼容）
 
 ## 已知边界
 
@@ -186,5 +226,5 @@ bash {baseDir}/run.sh tags <输出目录> --cover 封面.jpg --album "专辑名"
 2. **翻译与校对由 Agent 完成**，不是脚本能力——脚本只管合。稿子质量取决于执行者。
 3. **`normalize.py` 的 FIX 表是个案修补**，只在密文文档上套用；换新 PDF 要自己补词条。
 4. **加密 PDF 破密是启发式**：同一份文档内稳定，跨文档不通用；年份/专名必须对照上下文人工核。可疑词清单是「词典外词」，专名也会列出，需逐条确认。
-5. **内嵌标签本地播放全生效，但网易云「音乐网盘」不读内嵌标签**——只按标题/歌手匹配官方库，自制内容匹配不上。云盘里要显示需手动「编辑歌曲信息」+「粘贴歌词」。
+5. **内嵌标签本地播放全生效，但网易云「音乐网盘」不读内嵌标签**——只按标题/歌手匹配官方库，自制内容匹配不上。云盘条目的歌词/封面无法通过 API 或客户端设置，这是网易机制；但上传、入歌单已全自动化（见「发布分发」）。
 6. **音色有限**：Kokoro-82M 小模型，接近真人但不如大型云 TTS。别拿它跟 ElevenLabs 比。
